@@ -1,0 +1,37 @@
+cabal-version:      3.6
+name:               gera-index
+version:            0.1.0.0
+
+author:             mtwtkman
+maintainer:         924277+mtwtkman@users.noreply.github.com
+
+executable gera-index
+    main-is:          Main.hs
+    hs-source-dirs:   app
+    default-language: Haskell2010
+    build-depends:    base ^>=4.15.1.0
+                      , gera-index
+
+library
+  hs-source-dirs: lib
+  default-language: Haskell2010
+  exposed-modules: Gera
+  build-depends: base ^>=4.15.1.0
+               , text
+               , req
+  default-extensions: DeriveGeneric
+                    , OverloadedStrings
+
+
+test-suite test
+  hs-source-dirs: test
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  default-language: Haskell2010
+  build-depends:  base ^>=4.15.1.0
+                , gera-index
+                , smallcheck
+                , tasty
+                , tasty-smallcheck
+                , tasty-hspec
+                , hspec
