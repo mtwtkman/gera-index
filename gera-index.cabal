@@ -19,6 +19,7 @@ library
   build-depends: base ^>=4.15.1.0
                , text
                , req
+               , aeson
   default-extensions: DeriveGeneric
                     , OverloadedStrings
 

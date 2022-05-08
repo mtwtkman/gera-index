@@ -22,6 +22,7 @@ data SearchQuery = SearchQuery
 
 twitterSearchUrl = https "twitter.com" /: "search"
 
+-- query parameter: ?q=<word>%20(from:radio_gera)%20until%3AYYYY-MM-DD%20since%3A2022-MM-DD&src=typed_query&f=live
 --buildQuery :: SearchQuery -> QueryParam
 
 aggregateTweets :: SearchQuery -> IO ()

@@ -26,8 +26,9 @@ prop_buildQuery =
   testGroup
     "buildQuery"
     [ SC.testProperty "builds from specified values" $
-        \y m d ->
-          let date = Date (getValidYear y) (getValidMonth m) (getValidDay d)
+        \ymd ->
+          let (y, m, d) = ymd :: ValidDateParams
+              date = Date (getValidYear y) (getValidMonth m) (getValidDay d)
            in 1 == 1
     ]
 

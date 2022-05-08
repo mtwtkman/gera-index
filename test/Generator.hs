@@ -47,3 +47,5 @@ instance Bounded ValidDay where
 
 instance Monad m => Serial m ValidDay where
   series = cons1 normalize
+
+type ValidDateParams = (ValidYear, ValidMonth, ValidDay)
