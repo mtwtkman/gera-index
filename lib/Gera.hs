@@ -14,9 +14,6 @@ data Date = Date
     getDay :: Integer
   }
 
-instance Show Date where
-  show a = intercalate "-" $ map (show . ($ a)) [getYear, getMonth, getDay]
-
 data SearchQuery = SearchQuery
   { getArtist :: Artist,
     getFrom :: Date,
