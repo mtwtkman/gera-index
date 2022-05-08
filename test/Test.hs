@@ -1,6 +1,8 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Gera
+import Network.HTTP.Req
 import System.IO.Unsafe
 import Test.Hspec
 import Test.SmallCheck.Series
@@ -25,8 +27,8 @@ specs =
   testGroup "Specs" $
     map
       unsafePerformIO
-      [ HS.testSpec "write test" $ do
-          describe "write test" $ do
-            it "write test now!" $ do
-              "hoge" `shouldBe` "hoge"
+      [ HS.testSpec "constants" $ do
+          describe "twitter search url" $ do
+            it "is correct" $ do
+              renderUrl twitterSearchUrl == "https://twitter.com/search"
       ]
