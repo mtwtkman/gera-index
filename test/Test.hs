@@ -26,8 +26,9 @@ prop_buildQuery =
   testGroup
     "buildQuery"
     [ SC.testProperty "builds from specified values" $
-        \y ->
-          (y :: ValidYear) >= ValidYear 0
+        \y m d ->
+          let date = Date (getValidYear y) (getValidMonth m) (getValidDay d)
+           in 1 == 1
     ]
 
 specs :: TestTree
