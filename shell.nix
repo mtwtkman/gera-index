@@ -10,6 +10,6 @@ pkgs.mkShell {
   ];
   shellHook = ''
     alias fmt="ormolu -i **/*.hs"
-    export PS1="\e[1;34m[dev]\W$ \e[0m"
+    export PS1="\e[34;1m[dev]\W$ \e[0m"
   '';
 }
