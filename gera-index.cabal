@@ -22,6 +22,7 @@ library
                , req
                , aeson
                , bytestring
+               , regex
   default-extensions: DeriveGeneric
                     , OverloadedStrings
 
