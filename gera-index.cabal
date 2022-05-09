@@ -11,6 +11,7 @@ executable gera-index
     default-language: Haskell2010
     build-depends:    base ^>=4.15.1.0
                       , gera-index
+                      , text
 
 library
   hs-source-dirs: lib
@@ -20,6 +21,7 @@ library
                , text
                , req
                , aeson
+               , bytestring
   default-extensions: DeriveGeneric
                     , OverloadedStrings
 
