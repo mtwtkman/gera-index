@@ -25,11 +25,10 @@ properties = testGroup "Properties" [prop_dateToFormattedString]
 prop_dateToFormattedString :: TestTree
 prop_dateToFormattedString =
   testGroup
-    "dateToFormattedString (DOESN'T WORK...)"
+    "dateToFormattedString"
     [ SC.testProperty "concates members with a hyphen and pads by zero" $
         \y m d ->
-          let
-              yv = getValidYear (y :: ValidYear)
+          let yv = getValidYear (y :: ValidYear)
               mv = getValidMonth (m :: ValidMonth)
               dv = getValidDay (d :: ValidDay)
               date = Date yv mv dv

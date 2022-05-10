@@ -9,11 +9,12 @@ import Test.SmallCheck.Series
 
 -- Helper
 
-normalize :: (Bounded a, Ord a, Eq a) => a -> a
-normalize x
-  | x < minBound = minBound
-  | x > maxBound = maxBound
-  | otherwise = x
+normalize :: (Bounded a, Ord a, Eq a) => (Integer -> a) -> Integer -> a
+normalize f x =
+  let v = f x
+  in if v < minBound then minBound
+                     else if v > maxBound then maxBound
+                     else v
 
 -- ValidInteger
 
@@ -24,7 +25,7 @@ instance Bounded ValidYear where
   maxBound = ValidYear 9999
 
 instance Monad m => Serial m ValidYear where
-  series = cons1 normalize
+  series = cons1 (normalize ValidYear)
 
 -- ValidMonth
 
@@ -35,7 +36,7 @@ instance Bounded ValidMonth where
   maxBound = ValidMonth 12
 
 instance Monad m => Serial m ValidMonth where
-  series = cons1 normalize
+  series = cons1 (normalize ValidMonth)
 
 -- ValidDay
 
@@ -46,6 +47,6 @@ instance Bounded ValidDay where
   maxBound = ValidDay 31
 
 instance Monad m => Serial m ValidDay where
-  series = cons1 normalize
+  series = cons1 (normalize ValidDay)
 
 type ValidDateParams = (ValidYear, ValidMonth, ValidDay)
