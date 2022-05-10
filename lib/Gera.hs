@@ -1,5 +1,6 @@
 module Gera where
 
+import Text.RE.TDFA.ByteString.Lazy ((*=~),matches, re)
 import Control.Monad
 import Control.Monad.IO.Class
 import qualified Data.ByteString.Char8 as B
@@ -42,7 +43,6 @@ data SearchCriteria = SearchCriteria
 
 twitterSearchUrl = https "twitter.com" /: "search"
 
-geraLinkBase :: String
 geraLinkBase = "radio.gera.fan"
 
 buildQuery :: (QueryParam param, Monoid param) => SearchCriteria -> param
@@ -57,8 +57,8 @@ buildQuery s =
           Tx.pack ("until=" ++ dateToFormattedString (getTo s))
         ]
 
-findGeraLink :: L.ByteString -> [String]
-findGeraLink bs = undefined
+findGeraLink :: L.ByteString -> [L.ByteString]
+findGeraLink bs = matches $ bs *=~ [re|radio\.gera\.fan\/[a-zA-Z0-9]+|]
 
 aggregateTweets :: SearchCriteria -> IO L.ByteString
 aggregateTweets s = runReq defaultHttpConfig $ do

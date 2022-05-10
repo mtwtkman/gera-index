@@ -25,6 +25,7 @@ library
                , regex
   default-extensions: DeriveGeneric
                     , OverloadedStrings
+                    , QuasiQuotes
 
 
 test-suite test
