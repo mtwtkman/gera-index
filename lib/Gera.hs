@@ -1,13 +1,14 @@
 module Gera where
 
-import Text.Printf
-import Data.List
-import Data.Monoid ((<>))
 import Control.Monad
 import Control.Monad.IO.Class
+import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Lazy as L
+import Data.List
+import Data.Monoid ((<>))
 import qualified Data.Text as Tx
 import Network.HTTP.Req
-import qualified Data.ByteString.Char8 as B
+import Text.Printf
 
 data Index = Index
   { getArtist :: Artist,
@@ -41,18 +42,26 @@ data SearchCriteria = SearchCriteria
 
 twitterSearchUrl = https "twitter.com" /: "search"
 
+geraLinkBase :: String
+geraLinkBase = "radio.gera.fan"
+
 buildQuery :: (QueryParam param, Monoid param) => SearchCriteria -> param
 buildQuery s =
   "src" =: ("typed_query" :: String)
     <> "f" =: ("live" :: String)
-    <> "q" =: Tx.unwords [ getTagName s
-                         , "(from:radio_gera)"
-                         , Tx.pack ("since=" ++ dateToFormattedString (getFrom s))
-                         , Tx.pack ("until=" ++ dateToFormattedString (getTo s))
-                         ]
+    <> "q"
+      =: Tx.unwords
+        [ getTagName s,
+          "(from:radio_gera)",
+          Tx.pack ("since=" ++ dateToFormattedString (getFrom s)),
+          Tx.pack ("until=" ++ dateToFormattedString (getTo s))
+        ]
 
-aggregateTweets :: SearchCriteria -> IO ()
+findGeraLink :: L.ByteString -> [String]
+findGeraLink bs = undefined
+
+aggregateTweets :: SearchCriteria -> IO L.ByteString
 aggregateTweets s = runReq defaultHttpConfig $ do
   let qp = buildQuery s
-  resp <- req GET twitterSearchUrl NoReqBody bsResponse qp
-  liftIO $ B.putStrLn (responseBody resp)
+  resp <- req GET twitterSearchUrl NoReqBody lbsResponse qp
+  return $ responseBody resp

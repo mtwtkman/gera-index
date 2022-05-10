@@ -1,7 +1,7 @@
 module Main where
 
-import Gera
 import Data.Text
+import Gera
 
 main :: IO ()
 main = do

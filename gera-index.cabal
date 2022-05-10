@@ -41,3 +41,4 @@ test-suite test
                 , tasty-hspec
                 , hspec
                 , req
+                , bytestring

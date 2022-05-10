@@ -12,9 +12,12 @@ import Test.SmallCheck.Series
 normalize :: (Bounded a, Ord a, Eq a) => (Integer -> a) -> Integer -> a
 normalize f x =
   let v = f x
-  in if v < minBound then minBound
-                     else if v > maxBound then maxBound
-                     else v
+   in if v < minBound
+        then minBound
+        else
+          if v > maxBound
+            then maxBound
+            else v
 
 -- ValidInteger
 
