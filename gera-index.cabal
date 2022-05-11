@@ -12,11 +12,14 @@ executable gera-index
     build-depends:    base ^>=4.15.1.0
                       , gera-index
                       , text
+                      , bytestring
+                      , utf8-string
 
 library
   hs-source-dirs: lib
   default-language: Haskell2010
   exposed-modules: Gera
+                 , Twitter
   build-depends: base ^>=4.15.1.0
                , text
                , req
@@ -34,6 +37,8 @@ test-suite test
   main-is: Test.hs
   default-language: Haskell2010
   other-modules: Generator
+               , TwitterTest
+               , GeraTest
   build-depends:  base ^>=4.15.1.0
                 , gera-index
                 , smallcheck

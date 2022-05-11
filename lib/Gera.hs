@@ -43,6 +43,7 @@ data SearchCriteria = SearchCriteria
 
 twitterSearchUrl = https "twitter.com" /: "search"
 
+geraLinkBase :: String
 geraLinkBase = "radio.gera.fan"
 
 buildQuery :: (QueryParam param, Monoid param) => SearchCriteria -> param
@@ -51,10 +52,11 @@ buildQuery s =
     <> "f" =: ("live" :: String)
     <> "q"
       =: Tx.unwords
-        [ getTagName s,
-          "(from:radio_gera)",
-          Tx.pack ("since=" ++ dateToFormattedString (getFrom s)),
-          Tx.pack ("until=" ++ dateToFormattedString (getTo s))
+        [ getTagName s
+        , Tx.pack geraLinkBase
+        , "(from:radio_gera)"
+        , Tx.pack ("since=" ++ dateToFormattedString (getFrom s))
+        , Tx.pack ("until=" ++ dateToFormattedString (getTo s))
         ]
 
 findGeraLink :: L.ByteString -> [L.ByteString]
