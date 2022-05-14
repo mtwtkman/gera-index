@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/App.js",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc App.ts --outDir dist",
+    "exec": "node dist/App.js"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
