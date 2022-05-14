@@ -42,11 +42,4 @@ specs =
           describe "twitter search url" $ do
             it "is correct" $ do
               renderUrl twitterSearchUrl `shouldBe` "https://twitter.com/search",
-        HS.testSpec "findGeraLink" $ do
-          it "can find targetlinks" $ do
-            let link1 = geraLinkBase ++ "/84Ff"
-                link2 = geraLinkBase ++ "/9aBl"
-                linkWithNoize = "~~~~ " ++ link1 ++ " xxxxxx " ++ link2 ++ "---------"
-                toLBS = toLazyByteString . string8
-             in findGeraLink (toLBS linkWithNoize) `shouldBe` map toLBS [link1, link2]
       ]

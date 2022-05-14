@@ -45,25 +45,3 @@ twitterSearchUrl = https "twitter.com" /: "search"
 
 geraLinkBase :: String
 geraLinkBase = "radio.gera.fan"
-
-buildQuery :: (QueryParam param, Monoid param) => SearchCriteria -> param
-buildQuery s =
-  "src" =: ("typed_query" :: String)
-    <> "f" =: ("live" :: String)
-    <> "q"
-      =: Tx.unwords
-        [ getTagName s
-        , Tx.pack geraLinkBase
-        , "(from:radio_gera)"
-        , Tx.pack ("since=" ++ dateToFormattedString (getFrom s))
-        , Tx.pack ("until=" ++ dateToFormattedString (getTo s))
-        ]
-
-findGeraLink :: L.ByteString -> [L.ByteString]
-findGeraLink bs = matches $ bs *=~ [re|radio\.gera\.fan\/[a-zA-Z0-9]+|]
-
-aggregateTweets :: SearchCriteria -> IO L.ByteString
-aggregateTweets s = runReq defaultHttpConfig $ do
-  let qp = buildQuery s
-  resp <- req GET twitterSearchUrl NoReqBody lbsResponse qp
-  return $ responseBody resp
