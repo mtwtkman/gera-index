@@ -1,6 +1,5 @@
 module Gera where
 
-import Text.RE.TDFA.ByteString.Lazy ((*=~),matches, re)
 import Control.Monad
 import Control.Monad.IO.Class
 import qualified Data.ByteString.Char8 as B
@@ -10,6 +9,7 @@ import Data.Monoid ((<>))
 import qualified Data.Text as Tx
 import Network.HTTP.Req
 import Text.Printf
+import Text.RE.TDFA.ByteString.Lazy (matches, re, (*=~))
 
 data Index = Index
   { getArtist :: Artist,

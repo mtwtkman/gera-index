@@ -1,8 +1,8 @@
 module Main where
 
 import qualified GeraTest as GT
-import qualified TwitterTest as TT
 import Test.Tasty
+import qualified TwitterTest as TT
 
 main = defaultMain tests
 
