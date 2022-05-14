@@ -1,0 +1,12 @@
+{
+  "name": "aggregator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/App.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^14.1.0"
+  }
+}

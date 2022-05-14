@@ -7,11 +7,13 @@ data Client = Client { getApiKey :: String
                      , getAccessToken :: String
                      , getAccessSecret :: String
                      }
+                     deriving (Show)
 
 twitterApiKey = "TWITTER_API_KEY"
 twitterSecretKey = "TWITTER_SECRET_KEY"
 twitterAccessToken = "TWITTER_ACCESS_TOKEN"
 twitterAccessSecret = "TWITTER_ACCESS_SECRET"
+geraTwitterUserId = 1198816177704689665
 
 fromEnv :: IO Client
 fromEnv = do
@@ -46,3 +48,10 @@ fromEnvFile path = do
     accessToken <- lookup twitterAccessToken kvs
     accessSecret <- lookup twitterAccessSecret kvs
     return $ Client apiKey secretKey accessToken accessSecret
+
+fromDotEnv :: IO Client
+fromDotEnv = do
+  mc <- fromEnvFile ".env"
+  case mc of
+    Just c -> return c
+    Nothing -> error "Invalid access info"

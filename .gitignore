@@ -1,2 +1,5 @@
 dist-newstyle
 .env
+node_modules
+dist
+result
