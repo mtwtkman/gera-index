@@ -13,6 +13,15 @@ import Network.HTTP.Req
 import System.Environment
 import Text.Printf
 
+data InvalidSearchCriteria
+  = StartTimeMustBeLessThanEndTime
+  | MaxResultMustBeUnder100
+  | MaxResultMustBeOver1
+
+data TwitterError = MalformedSearchCriteria InvalidSearchCriteria
+
+type ThrowsError a = Either TwitterError a
+
 bearerTokenEnvName = "TWITTER_BEARER_TOKEN"
 
 geraTwitterUserId = 1198816177704689665
@@ -62,7 +71,7 @@ data Datetime = Datetime
     getMinute :: Integer,
     getSecond :: Integer
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 datetimeToFormattedString :: Datetime -> String
 datetimeToFormattedString dt =
@@ -77,18 +86,44 @@ datetimeToFormattedString dt =
 searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: Tx.pack (show geraTwitterUserId) /: "tweets"
 
 data SearchCriteria = SearchCriteria
-  { getMaxResulsts :: Int,
+  { getMaxResulsts :: Integer,
     getStartTime :: Maybe Datetime,
     getEndTime :: Maybe Datetime
   }
   deriving (Show)
 
+validateSearchCriteria :: SearchCriteria -> ThrowsError SearchCriteria
+validateSearchCriteria sc@(SearchCriteria _ (Just startTime) (Just endTime))
+  | startTime < endTime = Right sc
+  | otherwise = Left (MalformedSearchCriteria StartTimeMustBeLessThanEndTime)
+validateSearchCriteria sc@(SearchCriteria maxResults _ _)
+  | maxResults < 1 = Left (MalformedSearchCriteria MaxResultMustBeOver1)
+  | maxResults > 100 = Left (MalformedSearchCriteria MaxResultMustBeUnder100)
+  | otherwise = Right sc
+
+integerQueryParameter :: (QueryParam p, Monoid p) => Tx.Text -> Integer -> p
+integerQueryParameter name = (=:) name . show
+
+maxResultsQueryParameter :: (QueryParam p, Monoid p) => Integer -> p
+maxResultsQueryParameter = integerQueryParameter "max_results"
+
+datetimeQueryParameter :: (QueryParam p, Monoid p) => Tx.Text -> Datetime -> p
+datetimeQueryParameter name = (=:) name . datetimeToFormattedString
+
+startTimeQueryParamteter :: (QueryParam p, Monoid p) => Datetime -> p
+startTimeQueryParamteter = datetimeQueryParameter "start_time"
+
+endTimeQueryParameter :: (QueryParam p, Monoid p) => Datetime -> p
+endTimeQueryParameter = datetimeQueryParameter "end_time"
+
 toQueryParam :: (QueryParam p, Monoid p) => SearchCriteria -> p
-toQueryParam (SearchCriteria maxResults Nothing Nothing) =
-  "max_results" =: show maxResults
-toQueryParam (SearchCriteria maxResults (Just startTime) Nothing) =
-  "max_results" =: show maxResults
-    <> "start_time" =: datetimeToFormattedString startTime
+toQueryParam (SearchCriteria maxResults Nothing Nothing) = maxResultsQueryParameter maxResults
+toQueryParam (SearchCriteria maxResults (Just startTime) Nothing) = maxResultsQueryParameter maxResults <> startTimeQueryParamteter startTime
+toQueryParam (SearchCriteria maxResults Nothing (Just endTime)) = maxResultsQueryParameter maxResults <> endTimeQueryParameter endTime
+toQueryParam (SearchCriteria maxResults (Just startTime) (Just endTime)) =
+  maxResultsQueryParameter maxResults
+    <> startTimeQueryParamteter startTime
+    <> endTimeQueryParameter endTime
 
 data Tweet = Tweet
   { getId :: String,
