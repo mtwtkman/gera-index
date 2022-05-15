@@ -1,6 +1,17 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Twitter where
 
+import Data.Aeson
+import Data.Aeson.TH
+import Data.List
+import Data.Map (Map)
+import Data.Monoid ((<>))
+import qualified Data.Text as Tx
+import GHC.Generics
+import Network.HTTP.Req
 import System.Environment
+import Text.Printf
 
 bearerTokenEnvName = "TWITTER_BEARER_TOKEN"
 
@@ -42,3 +53,23 @@ fromDotEnv = do
   case mc of
     Just c -> return c
     Nothing -> error "Invalid access info"
+
+data Date = Date
+  { getYear :: Integer,
+    getMonth :: Integer,
+    getDay :: Integer
+  }
+
+dateToFormattedString :: Date -> String
+dateToFormattedString d =
+  intercalate "-" (map (printf "%02d") [getYear d, getMonth d, getDay d])
+
+searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: Tx.pack (show geraTwitterUserId) /: "tweets"
+
+data Tweet = Tweet
+  { getId :: String,
+    getText :: Tx.Text
+  }
+  deriving (Show, Generic)
+
+$(deriveJSON defaultOptions ''Tweet)

@@ -8,9 +8,10 @@ pkgs.mkShell {
     ormolu
     zlib
     jq
+    fd
   ];
   shellHook = ''
-    alias fmt='ormolu -i $(git ls-files "*.hs")'
+    alias fmt='ormolu -i $(fd --glob *.hs)'
     alias t="cabal run test --"
     alias b="cabal build"
     alias run="cabal run gera-index"
