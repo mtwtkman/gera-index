@@ -54,17 +54,41 @@ fromDotEnv = do
     Just c -> return c
     Nothing -> error "Invalid access info"
 
-data Date = Date
+data Datetime = Datetime
   { getYear :: Integer,
     getMonth :: Integer,
-    getDay :: Integer
+    getDay :: Integer,
+    getHour :: Integer,
+    getMinute :: Integer,
+    getSecond :: Integer
   }
+  deriving (Show, Eq)
 
-dateToFormattedString :: Date -> String
-dateToFormattedString d =
-  intercalate "-" (map (printf "%02d") [getYear d, getMonth d, getDay d])
+datetimeToFormattedString :: Datetime -> String
+datetimeToFormattedString dt =
+  intercalate "-" (mapPadZero [getYear, getMonth, getDay])
+    ++ "T"
+    ++ intercalate ":" (mapPadZero [getHour, getMinute, getSecond])
+    ++ "Z"
+  where
+    mapPadZero :: [Datetime -> Integer] -> [String]
+    mapPadZero fs = [printf "%02d" (f dt) | f <- fs]
 
 searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: Tx.pack (show geraTwitterUserId) /: "tweets"
+
+data SearchCriteria = SearchCriteria
+  { getMaxResulsts :: Int,
+    getStartTime :: Maybe Datetime,
+    getEndTime :: Maybe Datetime
+  }
+  deriving (Show)
+
+toQueryParam :: (QueryParam p, Monoid p) => SearchCriteria -> p
+toQueryParam (SearchCriteria maxResults Nothing Nothing) =
+  "max_results" =: show maxResults
+toQueryParam (SearchCriteria maxResults (Just startTime) Nothing) =
+  "max_results" =: show maxResults
+    <> "start_time" =: datetimeToFormattedString startTime
 
 data Tweet = Tweet
   { getId :: String,

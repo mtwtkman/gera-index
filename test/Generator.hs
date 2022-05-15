@@ -1,55 +1,67 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-
+{-# LANGUAGE DeriveGeneric, FlexibleInstances, MultiParamTypeClasses #-}
 module Generator where
 
 import GHC.Generics
 import Test.SmallCheck.Series
 
--- Helper
+data Zero = Zero deriving (Generic, Show)
+data OneDigit = OneDigit deriving (Generic, Show)
+data TwoDigits = TwoDigits deriving (Generic, Show)
+data FourDigits = FourDigits deriving (Generic, Show)
 
-normalize :: (Bounded a, Ord a, Eq a) => (Integer -> a) -> Integer -> a
-normalize f x =
-  let v = f x
-   in if v < minBound
-        then minBound
-        else
-          if v > maxBound
-            then maxBound
-            else v
+instance Monad m => Serial m Zero
+instance Monad m => Serial m OneDigit
+instance Monad m => Serial m TwoDigits
+instance Monad m => Serial m FourDigits
 
--- ValidInteger
+zeroToInteger :: Zero -> Integer
+zeroToInteger _ = 0
 
-newtype ValidYear = ValidYear {getValidYear :: Integer} deriving (Eq, Ord, Generic, Show)
+oneDigitToInteger :: OneDigit -> Integer
+oneDigitToInteger _  = 1
 
-instance Bounded ValidYear where
-  minBound = ValidYear 1900
-  maxBound = ValidYear 9999
+twoDigitsToInteger :: TwoDigits -> Integer
+twoDigitsToInteger _ = 10
 
-instance Monad m => Serial m ValidYear where
-  series = cons1 (normalize ValidYear)
+fourDigitsToInteger :: FourDigits -> Integer
+fourDigitsToInteger _ = 1000
 
--- ValidMonth
+newtype Year = Year FourDigits deriving (Generic, Show)
+data Month = Month1 OneDigit | Month2 TwoDigits deriving (Generic, Show)
+data Day = Day1 OneDigit | Day2 TwoDigits deriving (Generic, Show)
+data Hour = Hour0 Zero | Hour1 OneDigit | Hour2 TwoDigits deriving (Generic, Show)
+data Minute = Minute0 Zero | Minute1 OneDigit | Minute2 TwoDigits deriving (Generic, Show)
+data Second = Second0 Zero | Second1 OneDigit | Second2 TwoDigits deriving (Generic, Show)
 
-newtype ValidMonth = ValidMonth {getValidMonth :: Integer} deriving (Eq, Ord, Generic, Show)
+instance Monad m => Serial m Year
+instance Monad m => Serial m Month
+instance Monad m => Serial m Day
+instance Monad m => Serial m Hour
+instance Monad m => Serial m Minute
+instance Monad m => Serial m Second
 
-instance Bounded ValidMonth where
-  minBound = ValidMonth 1
-  maxBound = ValidMonth 12
+yearToInteger :: Year -> Integer
+yearToInteger (Year d) = fourDigitsToInteger d
 
-instance Monad m => Serial m ValidMonth where
-  series = cons1 (normalize ValidMonth)
+monthToInteger :: Month -> Integer
+monthToInteger (Month1 d) = oneDigitToInteger d
+monthToInteger (Month2 d) = twoDigitsToInteger d
 
--- ValidDay
+dayToInteger :: Day -> Integer
+dayToInteger (Day1 d) = oneDigitToInteger d
+dayToInteger (Day2 d) = twoDigitsToInteger d
 
-newtype ValidDay = ValidDay {getValidDay :: Integer} deriving (Eq, Ord, Generic, Show)
+hourToInteger :: Hour -> Integer
+hourToInteger (Hour0 d) = zeroToInteger d
+hourToInteger (Hour1 d) = oneDigitToInteger d
+hourToInteger (Hour2 d) = twoDigitsToInteger d
 
-instance Bounded ValidDay where
-  minBound = ValidDay 1
-  maxBound = ValidDay 31
+minuteToInteger :: Minute -> Integer
+minuteToInteger (Minute0 d) = zeroToInteger d
+minuteToInteger (Minute1 d) = oneDigitToInteger d
+minuteToInteger (Minute2 d) = twoDigitsToInteger d
 
-instance Monad m => Serial m ValidDay where
-  series = cons1 (normalize ValidDay)
-
-type ValidDateParams = (ValidYear, ValidMonth, ValidDay)
+secondToInteger :: Second -> Integer
+secondToInteger (Second0 d) = zeroToInteger d
+secondToInteger (Second1 d) = oneDigitToInteger d
+secondToInteger (Second2 d) = twoDigitsToInteger d

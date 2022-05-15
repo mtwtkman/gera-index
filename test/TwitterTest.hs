@@ -15,19 +15,22 @@ import Twitter
 tests = [specs, properties]
 
 properties :: TestTree
-properties = testGroup "Properties" [prop_dateToFormattedString]
+properties = testGroup "Properties" [prop_datetimeToFormattedString]
 
-prop_dateToFormattedString :: TestTree
-prop_dateToFormattedString =
+prop_datetimeToFormattedString :: TestTree
+prop_datetimeToFormattedString =
   testGroup
     "dateToFormattedString"
-    [ SC.testProperty "concates members with a hyphen and pads by zero" $
-        \y m d ->
-          let yv = getValidYear (y :: ValidYear)
-              mv = getValidMonth (m :: ValidMonth)
-              dv = getValidDay (d :: ValidDay)
-              date = Date yv mv dv
-           in dateToFormattedString date == printf "%04d-%02d-%02d" yv mv dv
+    [ SC.testProperty "transform itself by specified format" $
+        \y m d h mi s ->
+          let yv = yearToInteger (y :: Year)
+              mv = monthToInteger (m :: Month)
+              dv = dayToInteger (d :: Day)
+              hv = hourToInteger (h :: Hour)
+              miv = minuteToInteger (mi :: Minute)
+              sv = secondToInteger (s :: Second)
+              date = Datetime yv mv dv hv miv sv
+           in datetimeToFormattedString date == printf "%04d-%02d-%02dT%02d:%02d:%02dZ" yv mv dv hv miv sv
     ]
 
 specs :: TestTree
