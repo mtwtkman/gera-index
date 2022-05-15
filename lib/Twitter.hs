@@ -1,7 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, DataKinds #-}
 
 module Twitter where
 
+import Control.Monad
 import Data.Aeson
 import Data.Aeson.TH
 import Data.List
@@ -83,6 +84,7 @@ datetimeToFormattedString dt =
     mapPadZero :: [Datetime -> Integer] -> [String]
     mapPadZero fs = [printf "%02d" (f dt) | f <- fs]
 
+searchTweetsApiUrl :: Url 'Https
 searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: Tx.pack (show geraTwitterUserId) /: "tweets"
 
 data SearchCriteria = SearchCriteria
@@ -132,3 +134,12 @@ data Tweet = Tweet
   deriving (Show, Generic)
 
 $(deriveJSON defaultOptions ''Tweet)
+
+requestTwitter :: Client -> Url 'Https -> IO (JsonResponse Value)
+requestTwitter client url = runReq defaultHttpConfig $ do
+  let token = getBearerToken client
+  req GET url NoReqBody jsonResponse mempty
+
+
+fetchTweets :: Client -> SearchCriteria -> IO [Tweet]
+fetchTweets client sc = undefined
