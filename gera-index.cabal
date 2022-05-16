@@ -14,6 +14,7 @@ executable gera-index
                       , text
                       , bytestring
                       , utf8-string
+                      , req
 
 library
   hs-source-dirs: lib
