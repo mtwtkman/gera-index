@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
-import Twitter
-import Network.HTTP.Req
 import qualified Data.Text as Tx
 import qualified Data.Text.IO as Tx
+import Network.HTTP.Req
+import Twitter
 
 main :: IO ()
 main = do

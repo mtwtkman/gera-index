@@ -2,10 +2,10 @@
 
 module Twitter where
 
-import qualified Data.ByteString.Lazy.Char8 as L
 import Control.Monad
 import Data.Aeson
 import Data.Aeson.TH
+import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List
 import Data.Map (Map)
 import Data.Monoid ((<>))
@@ -140,7 +140,7 @@ data Tweet = Tweet
 instance FromJSON Tweet where
   parseJSON = withObject "Tweet" $ \v -> Tweet <$> v .: "id" <*> v .: "text"
 
-newtype Tweets = Tweets { getTweets :: [Tweet] } deriving (Show)
+newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show)
 
 instance FromJSON Tweets where
   parseJSON = withObject "Tweets" $ \v -> Tweets <$> v .: "data"
@@ -148,5 +148,5 @@ instance FromJSON Tweets where
 fetchTwitter :: Client -> SearchCriteria -> IO (JsonResponse Tweets)
 fetchTwitter c sc = runReq defaultHttpConfig $ do
   req GET searchTweetsApiUrl NoReqBody jsonResponse $
-      toQueryParam sc <>
-        oAuth2Bearer ( L.toStrict $ getBearerToken c )
+    toQueryParam sc
+      <> oAuth2Bearer (L.toStrict $ getBearerToken c)
