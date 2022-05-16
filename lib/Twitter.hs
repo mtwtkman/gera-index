@@ -1,7 +1,8 @@
-{-# LANGUAGE TemplateHaskell, DataKinds #-}
+{-# LANGUAGE DataKinds #-}
 
 module Twitter where
 
+import qualified Data.ByteString.Lazy.Char8 as L
 import Control.Monad
 import Data.Aeson
 import Data.Aeson.TH
@@ -27,12 +28,15 @@ bearerTokenEnvName = "TWITTER_BEARER_TOKEN"
 
 geraTwitterUserId = 1198816177704689665
 
-newtype Client = Client {getBearerToken :: String} deriving (Show)
+newtype Client = Client {getBearerToken :: L.ByteString} deriving (Show)
+
+client :: String -> Client
+client = Client . L.pack
 
 fromEnv :: IO Client
 fromEnv = do
   v <- getEnv bearerTokenEnvName
-  return $ Client v
+  return $ client v
 
 sep :: Char -> String -> (String, String)
 sep c s =
@@ -55,7 +59,7 @@ fromEnvFile path = do
   let kvs = map (sep '=') rows
   return $ do
     v <- lookup bearerTokenEnvName kvs
-    return $ Client v
+    return $ client v
 
 fromDotEnv :: IO Client
 fromDotEnv = do
@@ -131,15 +135,18 @@ data Tweet = Tweet
   { getId :: String,
     getText :: Tx.Text
   }
-  deriving (Show, Generic)
+  deriving (Show)
 
-$(deriveJSON defaultOptions ''Tweet)
+instance FromJSON Tweet where
+  parseJSON = withObject "Tweet" $ \v -> Tweet <$> v .: "id" <*> v .: "text"
 
-requestTwitter :: Client -> Url 'Https -> IO (JsonResponse Value)
-requestTwitter client url = runReq defaultHttpConfig $ do
-  let token = getBearerToken client
-  req GET url NoReqBody jsonResponse mempty
+newtype Tweets = Tweets { getTweets :: [Tweet] } deriving (Show)
 
+instance FromJSON Tweets where
+  parseJSON = withObject "Tweets" $ \v -> Tweets <$> v .: "data"
 
-fetchTweets :: Client -> SearchCriteria -> IO [Tweet]
-fetchTweets client sc = undefined
+fetchTwitter :: Client -> SearchCriteria -> IO (JsonResponse Tweets)
+fetchTwitter c sc = runReq defaultHttpConfig $ do
+  req GET searchTweetsApiUrl NoReqBody jsonResponse $
+      toQueryParam sc <>
+        oAuth2Bearer ( L.toStrict $ getBearerToken c )
