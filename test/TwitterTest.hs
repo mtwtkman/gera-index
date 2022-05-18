@@ -2,6 +2,8 @@
 
 module TwitterTest (tests) where
 
+import qualified Data.ByteString.Lazy as L
+import Data.Aeson
 import Generator
 import System.IO.Unsafe
 import Test.Hspec
@@ -53,4 +55,14 @@ spec_splitLine =
         let row1 = "hogehoge"
             row2 = "nekoneko"
          in splitLine (row1 ++ "\n" ++ row2) [] [] `shouldBe` [row1, row2]
+  ]
+
+spec_TweetsJsonParser :: [IO TestTree]
+spec_TweetsJsonParser =
+  [ HS.testSpec "Tweets json parser" $ do
+      it "can decode tweets api response correctly" $ do
+        j <- L.readFile "tweets.json"
+        case decode j :: Maybe Tweets of
+          Just tweets -> 1 `shouldBe` 1
+          Nothing -> fail "error"
   ]

@@ -138,16 +138,17 @@ data Tweet = Tweet
   deriving (Show)
 
 instance FromJSON Tweet where
-  parseJSON = withObject "Tweet" $
-    \v -> do
-      entities <- v .: "entities"
-      hashtagArray <-  withObject "HashtagArray" (.: "hashtags") entities
-      hashtags <- withArray "Hashtags" (map (.: "tag") . V.toList) hashtagArray
-      url <- withArray "Urls" (traverse (withObject "ExpandedUrl" (.: "expanded_url"))) entities
-      Tweet
-        <$> v .: "id"
-        <*> hashtags
-        <*> url
+  parseJSON = undefined
+  -- parseJSON = withObject "Tweet" $
+  --   \v -> do
+  --     entities <- v .: "entities"
+  --     hashtagArray <-  withObject "HashtagArray" (.: "hashtags") entities
+  --     hashtags <- withArray "Hashtags" (mapM (withObject "Tag" (.: "tag")) . V.toList) hashtagArray
+  --     url <- withArray "Urls" (traverse (withObject "ExpandedUrl" (.: "expanded_url"))) entities
+  --     Tweet
+  --       <$> v .: "id"
+  --       <*> hashtags
+  --       <*> url
 
 
 newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show)
