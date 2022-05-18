@@ -28,6 +28,7 @@ library
                , bytestring
                , regex
                , containers
+               , vector
   default-extensions: DeriveGeneric
                     , OverloadedStrings
                     , QuasiQuotes

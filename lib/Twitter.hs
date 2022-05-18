@@ -2,9 +2,9 @@
 
 module Twitter where
 
+import qualified Data.Vector as V
 import Control.Monad
 import Data.Aeson
-import Data.Aeson.TH
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List
 import Data.Map (Map)
@@ -20,12 +20,11 @@ data InvalidSearchCriteria
   | MaxResultMustBeUnder100
   | MaxResultMustBeOver1
 
-data TwitterError = MalformedSearchCriteria InvalidSearchCriteria
+newtype TwitterError = MalformedSearchCriteria InvalidSearchCriteria
 
 type ThrowsError a = Either TwitterError a
 
 bearerTokenEnvName = "TWITTER_BEARER_TOKEN"
-
 geraTwitterUserId = 1198816177704689665
 
 newtype Client = Client {getBearerToken :: L.ByteString} deriving (Show)
@@ -132,13 +131,24 @@ toQueryParam (SearchCriteria maxResults (Just startTime) (Just endTime)) =
     <> endTimeQueryParameter endTime
 
 data Tweet = Tweet
-  { getId :: String,
-    getText :: Tx.Text
+  { getId :: String
+  , getHashTags :: [Tx.Text]
+  , getGeraLink :: L.ByteString
   }
   deriving (Show)
 
 instance FromJSON Tweet where
-  parseJSON = withObject "Tweet" $ \v -> Tweet <$> v .: "id" <*> v .: "text"
+  parseJSON = withObject "Tweet" $
+    \v -> do
+      entities <- v .: "entities"
+      hashtagArray <-  withObject "HashtagArray" (.: "hashtags") entities
+      hashtags <- withArray "Hashtags" (map (.: "tag") . V.toList) hashtagArray
+      url <- withArray "Urls" (traverse (withObject "ExpandedUrl" (.: "expanded_url"))) entities
+      Tweet
+        <$> v .: "id"
+        <*> hashtags
+        <*> url
+
 
 newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show)
 
