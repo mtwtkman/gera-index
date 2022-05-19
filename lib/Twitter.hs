@@ -137,7 +137,7 @@ data Tweet = Tweet
   , getHashTags :: [Tx.Text]
   , getGeraLink :: L.ByteString
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance FromJSON Tweet where
   parseJSON = withObject "Tweet" $
@@ -146,14 +146,15 @@ instance FromJSON Tweet where
       entities <- v .: "entities"
       hashtagArray <-  withObject "HashtagArray" (.: "hashtags") entities
       hashtags <- withArray "Hashtags" (mapM (withObject "Tag" (.: "tag")) . V.toList) hashtagArray
-      urls <- withArray "Urls" (mapM (withObject "ExpandedUrl" (.: "expanded_url")) . V.toList) entities
-      when (null urls) $ fail "NO URL"
-      let geraUrl = filter (Tx.isInfixOf geraHost) urls
+      urls <- withObject "Urls" (.: "urls") entities
+      expandedUrls <- withArray "ExpandedUrls" (mapM (withObject "ExpandedUrl" (.: "expanded_url")) . V.toList) urls
+      when (null expandedUrls) $ fail "NO URL"
+      let geraUrl = filter (Tx.isInfixOf geraHost) expandedUrls
       when (null geraUrl) $ fail "NO GERA URL"
       return $ Tweet id' hashtags (L.fromStrict $ Tx.encodeUtf8 (head geraUrl))
 
 
-newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show)
+newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show, Eq)
 
 instance FromJSON Tweets where
   parseJSON = withObject "Tweets" $ \v -> Tweets <$> v .: "data"

@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, DataKinds #-}
 
 module TwitterTest (tests) where
 
@@ -36,7 +36,7 @@ prop_datetimeToFormattedString =
     ]
 
 specs :: TestTree
-specs = testGroup "Specs" $ map unsafePerformIO (spec_sep ++ spec_splitLine)
+specs = testGroup "Specs" $ map unsafePerformIO (spec_sep ++ spec_splitLine ++ spec_TweetJsonParser)
 
 spec_sep :: [IO TestTree]
 spec_sep =
@@ -57,11 +57,22 @@ spec_splitLine =
          in splitLine (row1 ++ "\n" ++ row2) [] [] `shouldBe` [row1, row2]
   ]
 
+spec_TweetJsonParser :: [IO TestTree]
+spec_TweetJsonParser =
+  [ HS.testSpec "Tweet json parser" $ do
+      describe "parses" $ do
+        it "correctly" $ do
+          j <- L.readFile "test/twitter-api-data/tweet/with_gera_link.json"
+          (decode j :: Maybe Tweet) `shouldBe` Just (Tweet "1503325072974663680" ["LLR","ダブバイ"] "https://radio.gera.fan/jWy1")
+        it "reject by no gera link" $ do
+          j <- L.readFile "test/twitter-api-data/tweet/no_gera_link.json"
+          (decode j :: Maybe Tweet) `shouldBe` Nothing
+  ]
 spec_TweetsJsonParser :: [IO TestTree]
 spec_TweetsJsonParser =
   [ HS.testSpec "Tweets json parser" $ do
       it "can decode tweets api response correctly" $ do
-        j <- L.readFile "test/tweets.json"
+        j <- L.readFile "test/twitter-api-data/tweets.json"
         case decode j :: Maybe Tweets of
           Just tweets -> 1 `shouldBe` 1
           Nothing -> fail "error"
