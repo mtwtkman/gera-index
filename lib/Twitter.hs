@@ -9,6 +9,7 @@ import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List
 import Data.Map (Map)
 import Data.Monoid ((<>))
+import qualified Data.Text.Encoding as Tx
 import qualified Data.Text as Tx
 import GHC.Generics
 import Network.HTTP.Req
@@ -26,6 +27,7 @@ type ThrowsError a = Either TwitterError a
 
 bearerTokenEnvName = "TWITTER_BEARER_TOKEN"
 geraTwitterUserId = 1198816177704689665
+geraHost = "radio.gera.fan"
 
 newtype Client = Client {getBearerToken :: L.ByteString} deriving (Show)
 
@@ -138,17 +140,17 @@ data Tweet = Tweet
   deriving (Show)
 
 instance FromJSON Tweet where
-  parseJSON = undefined
-  -- parseJSON = withObject "Tweet" $
-  --   \v -> do
-  --     entities <- v .: "entities"
-  --     hashtagArray <-  withObject "HashtagArray" (.: "hashtags") entities
-  --     hashtags <- withArray "Hashtags" (mapM (withObject "Tag" (.: "tag")) . V.toList) hashtagArray
-  --     url <- withArray "Urls" (traverse (withObject "ExpandedUrl" (.: "expanded_url"))) entities
-  --     Tweet
-  --       <$> v .: "id"
-  --       <*> hashtags
-  --       <*> url
+  parseJSON = withObject "Tweet" $
+    \v -> do
+      id' <- v .: "id"
+      entities <- v .: "entities"
+      hashtagArray <-  withObject "HashtagArray" (.: "hashtags") entities
+      hashtags <- withArray "Hashtags" (mapM (withObject "Tag" (.: "tag")) . V.toList) hashtagArray
+      urls <- withArray "Urls" (mapM (withObject "ExpandedUrl" (.: "expanded_url")) . V.toList) entities
+      when (null urls) $ fail "NO URL"
+      let geraUrl = filter (Tx.isInfixOf geraHost) urls
+      when (null geraUrl) $ fail "NO GERA URL"
+      return $ Tweet id' hashtags (L.fromStrict $ Tx.encodeUtf8 (head geraUrl))
 
 
 newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show)

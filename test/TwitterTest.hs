@@ -61,7 +61,7 @@ spec_TweetsJsonParser :: [IO TestTree]
 spec_TweetsJsonParser =
   [ HS.testSpec "Tweets json parser" $ do
       it "can decode tweets api response correctly" $ do
-        j <- L.readFile "tweets.json"
+        j <- L.readFile "test/tweets.json"
         case decode j :: Maybe Tweets of
           Just tweets -> 1 `shouldBe` 1
           Nothing -> fail "error"
