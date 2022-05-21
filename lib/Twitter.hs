@@ -8,6 +8,7 @@ import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List
 import Data.Map (Map)
+import Data.Maybe
 import Data.Monoid ((<>))
 import qualified Data.Text as Tx
 import qualified Data.Text.Encoding as Tx
@@ -16,7 +17,6 @@ import GHC.Generics
 import Network.HTTP.Req
 import System.Environment
 import Text.Printf
-import Data.Maybe
 
 data InvalidSearchCriteria
   = StartTimeMustBeLessThanEndTime
@@ -112,6 +112,9 @@ validateSearchCriteria sc@(SearchCriteria maxResults _ _)
   | maxResults > 100 = Left (MalformedSearchCriteria MaxResultMustBeUnder100)
   | otherwise = Right sc
 
+textQueryParameterBuilder :: (QueryParam p, Monoid p) => Tx.Text -> Tx.Text -> p
+textQueryParameterBuilder k v = k =: v
+
 integerQueryParameter :: (QueryParam p, Monoid p) => Tx.Text -> Integer -> p
 integerQueryParameter name = (=:) name . show
 
@@ -135,6 +138,12 @@ toQueryParam (SearchCriteria maxResults (Just startTime) (Just endTime)) =
   maxResultsQueryParameter maxResults
     <> startTimeQueryParamteter startTime
     <> endTimeQueryParameter endTime
+
+buildQueryParameter :: (QueryParam p, Monoid p) => SearchCriteria -> p
+buildQueryParameter sc =
+  toQueryParam sc
+    <> textQueryParameterBuilder "tweet.fields" "entities"
+    <> textQueryParameterBuilder "exclude" "retweets,replies"
 
 data Tweet = Tweet
   { getId :: String,
@@ -172,5 +181,5 @@ instance FromJSON Tweets where
 fetchTwitter :: Client -> SearchCriteria -> IO (JsonResponse Tweets)
 fetchTwitter c sc = runReq defaultHttpConfig $ do
   req GET searchTweetsApiUrl NoReqBody jsonResponse $
-    toQueryParam sc
+    buildQueryParameter sc
       <> oAuth2Bearer (L.toStrict $ getBearerToken c)

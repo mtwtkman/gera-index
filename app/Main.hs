@@ -10,7 +10,7 @@ import Twitter
 main :: IO ()
 main = do
   client <- fromDotEnv
-  let sc = SearchCriteria 10 (Just (Datetime 2022 4 1 0 0 0)) Nothing
+  let sc = SearchCriteria 5 (Just (Datetime 2022 4 1 0 0 0)) Nothing
   resp <- fetchTwitter client sc
   let tweets = responseBody resp :: Tweets
-  print ""
+  print tweets
