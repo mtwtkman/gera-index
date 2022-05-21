@@ -1,9 +1,10 @@
-{-# LANGUAGE OverloadedStrings, DataKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module TwitterTest (tests) where
 
-import qualified Data.ByteString.Lazy as L
 import Data.Aeson
+import qualified Data.ByteString.Lazy as L
 import Generator
 import System.IO.Unsafe
 import Test.Hspec
@@ -36,7 +37,7 @@ prop_datetimeToFormattedString =
     ]
 
 specs :: TestTree
-specs = testGroup "Specs" $ map unsafePerformIO (spec_sep ++ spec_splitLine ++ spec_TweetJsonParser)
+specs = testGroup "Specs" $ map unsafePerformIO (spec_sep ++ spec_splitLine ++ spec_TweetJsonParser ++ spec_TweetsJsonParser)
 
 spec_sep :: [IO TestTree]
 spec_sep =
@@ -63,17 +64,24 @@ spec_TweetJsonParser =
       describe "parses" $ do
         it "correctly" $ do
           j <- L.readFile "test/twitter-api-data/tweet/with_gera_link.json"
-          (decode j :: Maybe Tweet) `shouldBe` Just (Tweet "1503325072974663680" ["LLR","ダブバイ"] "https://radio.gera.fan/jWy1")
+          (decode j :: Maybe Tweet) `shouldBe` Just (Tweet "1503325072974663680" ["LLR", "ダブバイ"] "https://radio.gera.fan/jWy1")
         it "reject by no gera link" $ do
           j <- L.readFile "test/twitter-api-data/tweet/no_gera_link.json"
           (decode j :: Maybe Tweet) `shouldBe` Nothing
   ]
+
 spec_TweetsJsonParser :: [IO TestTree]
 spec_TweetsJsonParser =
   [ HS.testSpec "Tweets json parser" $ do
       it "can decode tweets api response correctly" $ do
-        j <- L.readFile "test/twitter-api-data/tweets.json"
-        case decode j :: Maybe Tweets of
-          Just tweets -> 1 `shouldBe` 1
-          Nothing -> fail "error"
+        j <- L.readFile "test/twitter-api-data/tweets/correct.json"
+        (decode j :: Maybe Tweets)
+          `shouldBe` Just
+            ( Tweets
+                [ Tweet "1503325072974663680" ["LLR", "ダブバイ"] "https://radio.gera.fan/jWy1",
+                  Tweet "1503325066389438465" ["錦鯉", "人生五十年"] "https://radio.gera.fan/A3do",
+                  Tweet "1503325066376978433" ["モダンタイムス", "ブサイクラジオ"] "https://radio.gera.fan/TRXK",
+                  Tweet "1503325063751348228" ["ゆったり感", "ヘル中"] "https://radio.gera.fan/iYmE"
+                ]
+            )
   ]

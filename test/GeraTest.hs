@@ -12,6 +12,3 @@ import Text.Printf
 import Prelude hiding (toInteger)
 
 tests = [properties]
-
-
-

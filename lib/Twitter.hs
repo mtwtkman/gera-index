@@ -2,15 +2,16 @@
 
 module Twitter where
 
-import qualified Data.Vector as V
 import Control.Monad
 import Data.Aeson
+import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List
 import Data.Map (Map)
 import Data.Monoid ((<>))
-import qualified Data.Text.Encoding as Tx
 import qualified Data.Text as Tx
+import qualified Data.Text.Encoding as Tx
+import qualified Data.Vector as V
 import GHC.Generics
 import Network.HTTP.Req
 import System.Environment
@@ -26,7 +27,9 @@ newtype TwitterError = MalformedSearchCriteria InvalidSearchCriteria
 type ThrowsError a = Either TwitterError a
 
 bearerTokenEnvName = "TWITTER_BEARER_TOKEN"
+
 geraTwitterUserId = 1198816177704689665
+
 geraHost = "radio.gera.fan"
 
 newtype Client = Client {getBearerToken :: L.ByteString} deriving (Show)
@@ -133,9 +136,9 @@ toQueryParam (SearchCriteria maxResults (Just startTime) (Just endTime)) =
     <> endTimeQueryParameter endTime
 
 data Tweet = Tweet
-  { getId :: String
-  , getHashTags :: [Tx.Text]
-  , getGeraLink :: L.ByteString
+  { getId :: String,
+    getHashTags :: [Tx.Text],
+    getGeraLink :: L.ByteString
   }
   deriving (Show, Eq)
 
@@ -144,7 +147,7 @@ instance FromJSON Tweet where
     \v -> do
       id' <- v .: "id"
       entities <- v .: "entities"
-      hashtagArray <-  withObject "HashtagArray" (.: "hashtags") entities
+      hashtagArray <- withObject "HashtagArray" (.: "hashtags") entities
       hashtags <- withArray "Hashtags" (mapM (withObject "Tag" (.: "tag")) . V.toList) hashtagArray
       urls <- withObject "Urls" (.: "urls") entities
       expandedUrls <- withArray "ExpandedUrls" (mapM (withObject "ExpandedUrl" (.: "expanded_url")) . V.toList) urls
@@ -153,11 +156,17 @@ instance FromJSON Tweet where
       when (null geraUrl) $ fail "NO GERA URL"
       return $ Tweet id' hashtags (L.fromStrict $ Tx.encodeUtf8 (head geraUrl))
 
+parseTweetArray :: Array -> Parser [Tweet]
+parseTweetArray tweets =
+  mapM (parseJSON :: Value -> Parser Tweet) (V.toList tweets)
 
 newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show, Eq)
 
 instance FromJSON Tweets where
-  parseJSON = withObject "Tweets" $ \v -> Tweets <$> v .: "data"
+  parseJSON = withObject "Data" $ \o -> do
+    tweetArray <- o .: "data"
+    tweets <- withArray "Tweets" parseTweetArray tweetArray
+    return $ Tweets tweets
 
 fetchTwitter :: Client -> SearchCriteria -> IO (JsonResponse Tweets)
 fetchTwitter c sc = runReq defaultHttpConfig $ do
