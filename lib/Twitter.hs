@@ -21,7 +21,7 @@ import Text.Printf
 data InvalidSearchCriteria
   = StartTimeMustBeLessThanEndTime
   | MaxResultMustBeUnder100
-  | MaxResultMustBeOver1
+  | MaxResultMustBeOver5
 
 newtype TwitterError = MalformedSearchCriteria InvalidSearchCriteria
 
@@ -108,7 +108,7 @@ validateSearchCriteria sc@(SearchCriteria _ (Just startTime) (Just endTime))
   | startTime < endTime = Right sc
   | otherwise = Left (MalformedSearchCriteria StartTimeMustBeLessThanEndTime)
 validateSearchCriteria sc@(SearchCriteria maxResults _ _)
-  | maxResults < 1 = Left (MalformedSearchCriteria MaxResultMustBeOver1)
+  | maxResults < 5 = Left (MalformedSearchCriteria MaxResultMustBeOver5)
   | maxResults > 100 = Left (MalformedSearchCriteria MaxResultMustBeUnder100)
   | otherwise = Right sc
 
