@@ -15,6 +15,7 @@ executable gera-index
                       , bytestring
                       , utf8-string
                       , req
+                      , aeson
 
 library
   hs-source-dirs: lib

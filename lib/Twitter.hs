@@ -150,7 +150,7 @@ data Tweet = Tweet
     getHashTags :: [Tx.Text],
     getGeraLink :: Maybe L.ByteString
   }
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
 instance FromJSON Tweet where
   parseJSON = withObject "Tweet" $
@@ -166,17 +166,25 @@ instance FromJSON Tweet where
             x : _ -> return $ L.fromStrict (Tx.encodeUtf8 x)
       return $ Tweet id' hashtags geraUrl
 
+instance ToJSON Tweet where
+  toJSON t = object [ "id" .= getId t
+                    , "tags" .= getHashTags t
+                    , "gera_url" .= maybe "" show (getGeraLink t)
+                    ]
+
 parseTweetArray :: Array -> Parser [Tweet]
 parseTweetArray tweets =
   mapM (parseJSON :: Value -> Parser Tweet) (V.toList tweets)
 
-newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show, Eq)
+newtype Tweets = Tweets {getTweets :: [Tweet]} deriving (Show, Eq, Generic)
 
 instance FromJSON Tweets where
   parseJSON = withObject "Data" $ \o -> do
     tweetArray <- o .: "data"
     tweets <- withArray "Tweets" parseTweetArray tweetArray
     return $ Tweets (filter (isJust . getGeraLink) tweets)
+
+instance ToJSON Tweets
 
 fetchTwitter :: Client -> SearchCriteria -> IO (JsonResponse Tweets)
 fetchTwitter c sc = runReq defaultHttpConfig $ do
