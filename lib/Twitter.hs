@@ -16,6 +16,7 @@ import GHC.Generics
 import Network.HTTP.Req
 import System.Environment
 import Text.Printf
+import Data.Maybe
 
 data InvalidSearchCriteria
   = StartTimeMustBeLessThanEndTime
@@ -138,7 +139,7 @@ toQueryParam (SearchCriteria maxResults (Just startTime) (Just endTime)) =
 data Tweet = Tweet
   { getId :: String,
     getHashTags :: [Tx.Text],
-    getGeraLink :: L.ByteString
+    getGeraLink :: Maybe L.ByteString
   }
   deriving (Show, Eq)
 
@@ -151,10 +152,10 @@ instance FromJSON Tweet where
       hashtags <- withArray "Hashtags" (mapM (withObject "Tag" (.: "tag")) . V.toList) hashtagArray
       urls <- withObject "Urls" (.: "urls") entities
       expandedUrls <- withArray "ExpandedUrls" (mapM (withObject "ExpandedUrl" (.: "expanded_url")) . V.toList) urls
-      when (null expandedUrls) $ fail "NO URL"
-      let geraUrl = filter (Tx.isInfixOf geraHost) expandedUrls
-      when (null geraUrl) $ fail "NO GERA URL"
-      return $ Tweet id' hashtags (L.fromStrict $ Tx.encodeUtf8 (head geraUrl))
+      let geraUrl = case filter (Tx.isInfixOf geraHost) expandedUrls of
+            [] -> mempty
+            x : _ -> return $ L.fromStrict (Tx.encodeUtf8 x)
+      return $ Tweet id' hashtags geraUrl
 
 parseTweetArray :: Array -> Parser [Tweet]
 parseTweetArray tweets =
@@ -166,7 +167,7 @@ instance FromJSON Tweets where
   parseJSON = withObject "Data" $ \o -> do
     tweetArray <- o .: "data"
     tweets <- withArray "Tweets" parseTweetArray tweetArray
-    return $ Tweets tweets
+    return $ Tweets (filter (isJust . getGeraLink) tweets)
 
 fetchTwitter :: Client -> SearchCriteria -> IO (JsonResponse Tweets)
 fetchTwitter c sc = runReq defaultHttpConfig $ do
