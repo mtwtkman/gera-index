@@ -14,6 +14,4 @@ main :: IO ()
 main = do
   client <- fromDotEnv
   let sc = SearchCriteria 5 (Just (Datetime 2022 4 1 0 0 0)) Nothing
-  resp <- fetchTwitter client sc
-  let tweets = responseBody resp :: Tweets
-  L.writeFile "gera-links.json" (encode tweets)
+  aggregate client sc "result/tweets.json"

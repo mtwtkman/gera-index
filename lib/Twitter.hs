@@ -191,3 +191,9 @@ fetchTwitter c sc = runReq defaultHttpConfig $ do
   req GET searchTweetsApiUrl NoReqBody jsonResponse $
     buildQueryParameter sc
       <> oAuth2Bearer (L.toStrict $ getBearerToken c)
+
+aggregate :: Client -> SearchCriteria -> FilePath -> IO ()
+aggregate c sc path = do
+  resp <- fetchTwitter c sc
+  let tweets = responseBody resp
+  L.writeFile path (encode tweets)
