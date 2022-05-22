@@ -30,9 +30,11 @@ library
                , regex
                , containers
                , vector
+               , tagsoup
   default-extensions: DeriveGeneric
                     , OverloadedStrings
                     , QuasiQuotes
+                    , DataKinds
 
 
 test-suite test
@@ -42,6 +44,7 @@ test-suite test
   default-language: Haskell2010
   other-modules: Generator
                , TwitterTest
+               , GeraTest
   build-depends:  base ^>=4.15.1.0
                 , gera-index
                 , smallcheck

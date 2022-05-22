@@ -2,13 +2,12 @@
 
 module Main where
 
+import Data.Aeson
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as Tx
 import qualified Data.Text.IO as Tx
 import Network.HTTP.Req
 import Twitter
-import Data.Aeson
-import qualified Data.ByteString.Lazy as L
-
 
 main :: IO ()
 main = do

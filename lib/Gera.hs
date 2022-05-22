@@ -1,47 +1,43 @@
 module Gera where
 
-import Control.Monad
-import Control.Monad.IO.Class
-import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy as L
-import Data.List
-import Data.Monoid ((<>))
 import qualified Data.Text as Tx
 import Network.HTTP.Req
-import Text.Printf
-import Text.RE.TDFA.ByteString.Lazy (matches, re, (*=~))
+import Text.HTML.TagSoup
 
-data Index = Index
-  { getArtist :: Artist,
-    getEpisodes :: [Episode]
+data GeraError
+  = FailedParse
+  | NotFoundAudioFile
+  deriving (Show, Eq)
+
+type ThrowsError a = Either GeraError a
+
+data Datetime = Datetime
+  { getYear :: Int,
+    getMonth :: Int,
+    getDay :: Int,
+    getHour :: Int,
+    getMinute :: Int
   }
+  deriving (Show, Eq)
 
-newtype Artist = Artist {getName :: Tx.Text}
+fetchPage :: Url 'Https -> IO LbsResponse
+fetchPage url = runReq defaultHttpConfig $ do
+  req GET url NoReqBody lbsResponse mempty
 
-data Episode = Episode
-  { getTitle :: Tx.Text,
-    getNumber :: Integer,
-    getDate :: String,
-    getLink :: String
+data Gera = Gera
+  { getEpisodeTitle :: Tx.Text,
+    getProgramNumber :: Int,
+    getAudioUrl :: L.ByteString,
+    getBroadcastDeadLine :: Maybe Datetime
   }
+  deriving (Show, Eq)
 
-data Date = Date
-  { getYear :: Integer,
-    getMonth :: Integer,
-    getDay :: Integer
-  }
+findAudioUrl :: [Tag L.ByteString] -> ThrowsError L.ByteString
+findAudioUrl tags = case dropWhile (~/= ("<audio>" :: String)) tags of
+  [] -> Left NotFoundAudioFile
+  x : _ -> Right $ fromAttrib "src" x
 
-dateToFormattedString :: Date -> String
-dateToFormattedString d =
-  intercalate "-" (map (printf "%02d") [getYear d, getMonth d, getDay d])
-
-data SearchCriteria = SearchCriteria
-  { getTagName :: Tx.Text,
-    getFrom :: Date,
-    getTo :: Date
-  }
-
-twitterSearchUrl = https "twitter.com" /: "search"
-
-geraLinkBase :: String
-geraLinkBase = "radio.gera.fan"
+parsePage :: L.ByteString -> ThrowsError Gera
+parsePage content =
+  undefined

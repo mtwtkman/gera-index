@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-
 module Twitter where
 
 import Control.Monad
@@ -167,10 +165,12 @@ instance FromJSON Tweet where
       return $ Tweet id' hashtags geraUrl
 
 instance ToJSON Tweet where
-  toJSON t = object [ "id" .= getId t
-                    , "tags" .= getHashTags t
-                    , "gera_url" .= maybe "" show (getGeraLink t)
-                    ]
+  toJSON t =
+    object
+      [ "id" .= getId t,
+        "tags" .= getHashTags t,
+        "gera_url" .= maybe "" show (getGeraLink t)
+      ]
 
 parseTweetArray :: Array -> Parser [Tweet]
 parseTweetArray tweets =
