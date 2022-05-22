@@ -54,3 +54,4 @@ test-suite test
                 , hspec
                 , bytestring
                 , aeson
+                , tagsoup
