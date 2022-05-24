@@ -3,6 +3,7 @@
 module GeraTest (tests) where
 
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as L
 import Gera
 import System.IO.Unsafe
 import Test.Hspec
@@ -41,7 +42,7 @@ spec_findEpisode :: IO TestTree
 spec_findEpisode =
   HS.testSpec "findEpisode" $ do
     it "finds episode number and title from the page" $ do
-      tags <- tagsFromTestData "page.html"
+      tags <- tagsFromTestData "episode.html"
       findEpisode tags `shouldBe` Right (Episode "ギュネイ" 35)
 
 spec_findBroadCastDeadLine :: IO TestTree

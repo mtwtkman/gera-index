@@ -49,12 +49,15 @@ findAudioUrl tags = case dropWhile (~/= ("<audio>" :: String)) tags of
   [] -> Left NotFoundAudioFile
   x : _ -> Right $ fromAttrib "src" x
 
+extractEpisodeSection :: [Tag L.ByteString] -> [Tag L.ByteString]
+extractEpisodeSection = dropWhile (~/= ("<div class=episode-title>" :: String))
+
 findEpisode :: [Tag L.ByteString] -> ThrowsError Episode
 findEpisode tags = case dropWhile (~/= ("<div class=episode-title>" :: String)) tags of
                     [] -> Left NotFoundEpisode
-                    x : _ ->
-                      let s  = fromTagText x
-                          [[lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[L.ByteString]]
+                    xs ->
+                      let s  = innerText xs
+                          [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[L.ByteString]]
                      in case L.readInt lbsNumber of
                       Just (number, _) -> Right (Episode title number)
                       _ -> Left NotFoundEpisode
