@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Gera where
 
+import Data.String
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Text as Tx
@@ -24,6 +25,9 @@ data Datetime = Datetime
     getMinute :: Int
   }
   deriving (Show, Eq)
+
+datetimeFromString :: (IsString s) => s -> Datetime
+datetimeFromString s = undefined
 
 fetchPage :: Url 'Https -> IO LbsResponse
 fetchPage url = runReq defaultHttpConfig $ do
@@ -54,6 +58,15 @@ findEpisode tags = case dropWhile (~/= ("<div class=episode-title>" :: String)) 
                      in case L.readInt lbsNumber of
                       Just (number, _) -> Right (Episode title number)
                       _ -> Left NotFoundEpisode
+
+findBroadCastDeadLine :: [Tag L.ByteString] -> Maybe Datetime
+findBroadCastDeadLine tags = case dropWhile (~/= ("<div class=episode-details>" :: String)) tags of
+                               [] -> Nothing
+                               x : _ ->
+                                 let s = fromTagText x
+                                 in case s =~ [re|配信期限：([0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2})|] :: [[L.ByteString]] of
+                                      [] -> Nothing
+                                      [[datetime]] -> Just (datetimeFromString datetime)
 
 parsePage :: L.ByteString -> ThrowsError Gera
 parsePage content =

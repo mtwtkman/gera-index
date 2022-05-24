@@ -44,6 +44,20 @@ spec_findEpisode =
       tags <- tagsFromTestData "page.html"
       findEpisode tags `shouldBe` Right (Episode "ギュネイ" 35)
 
+spec_findBroadCastDeadLine :: IO TestTree
+spec_findBroadCastDeadLine =
+  HS.testSpec "findBroadCastDeadLine" $ do
+    it "can find dead line as datetime" $ do
+      tags <- tagsFromTestData "page.html"
+      findBroadCastDeadLine tags `shouldBe` Just (Datetime 2022 9 14 12 0)
+    describe "can finds blank deadline as nothing" $ do
+      it "because no deadline" $ do
+        tags <- tagsFromTestData "nodeadline.html"
+        findBroadCastDeadLine tags `shouldBe` Nothing
+      it "because unexpected format" $ do
+        tags <- tagsFromTestData "unepxecteddeadline.html"
+        findBroadCastDeadLine tags `shouldBe` Nothing
+
 spec_parsePage :: IO TestTree
 spec_parsePage =
   HS.testSpec "parsePage" $ do
