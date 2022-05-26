@@ -55,3 +55,4 @@ test-suite test
                 , bytestring
                 , aeson
                 , tagsoup
+  default-extensions: OverloadedStrings

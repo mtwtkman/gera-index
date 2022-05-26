@@ -55,7 +55,7 @@ findEpisode :: [Tag C.ByteString] -> ThrowsError Episode
 findEpisode tags = case dropWhile (~/= ("<div class=episode-title>" :: String)) tags of
                     [] -> Left NotFoundEpisode
                     xs ->
-                      let s  = innerText xs
+                      let s  = innerText xs :: C.ByteString
                           [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[C.ByteString]]
                      in case C.readInt lbsNumber of
                       Just (number, _) -> Right (Episode title number)

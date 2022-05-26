@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module GeraTest (tests) where
 
 import qualified Data.ByteString.Lazy.Char8 as C

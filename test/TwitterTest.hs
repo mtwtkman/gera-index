@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module TwitterTest (tests) where
 
 import Data.Aeson
