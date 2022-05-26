@@ -2,8 +2,7 @@
 module Gera where
 
 import Data.String
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.Text as Tx
 import Network.HTTP.Req
 import Text.HTML.TagSoup
@@ -33,44 +32,44 @@ fetchPage :: Url 'Https -> IO LbsResponse
 fetchPage url = runReq defaultHttpConfig $ do
   req GET url NoReqBody lbsResponse mempty
 
-data Episode = Episode { getTitle :: L.ByteString
+data Episode = Episode { getTitle :: C.ByteString
                        , getNumber :: Int
                        } deriving (Show, Eq)
 
 data Gera = Gera
   { getEpisode :: Episode,
-    getAudioUrl :: L.ByteString,
+    getAudioUrl :: C.ByteString,
     getBroadcastDeadLine :: Maybe Datetime
   }
   deriving (Show, Eq)
 
-findAudioUrl :: [Tag L.ByteString] -> ThrowsError L.ByteString
+findAudioUrl :: [Tag C.ByteString] -> ThrowsError C.ByteString
 findAudioUrl tags = case dropWhile (~/= ("<audio>" :: String)) tags of
   [] -> Left NotFoundAudioFile
   x : _ -> Right $ fromAttrib "src" x
 
-extractEpisodeSection :: [Tag L.ByteString] -> [Tag L.ByteString]
+extractEpisodeSection :: [Tag C.ByteString] -> [Tag C.ByteString]
 extractEpisodeSection = dropWhile (~/= ("<div class=episode-title>" :: String))
 
-findEpisode :: [Tag L.ByteString] -> ThrowsError Episode
+findEpisode :: [Tag C.ByteString] -> ThrowsError Episode
 findEpisode tags = case dropWhile (~/= ("<div class=episode-title>" :: String)) tags of
                     [] -> Left NotFoundEpisode
                     xs ->
                       let s  = innerText xs
-                          [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[L.ByteString]]
-                     in case L.readInt lbsNumber of
+                          [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[C.ByteString]]
+                     in case C.readInt lbsNumber of
                       Just (number, _) -> Right (Episode title number)
                       _ -> Left NotFoundEpisode
 
-findBroadCastDeadLine :: [Tag L.ByteString] -> Maybe Datetime
+findBroadCastDeadLine :: [Tag C.ByteString] -> Maybe Datetime
 findBroadCastDeadLine tags = case dropWhile (~/= ("<div class=episode-details>" :: String)) tags of
                                [] -> Nothing
                                x : _ ->
                                  let s = fromTagText x
-                                 in case s =~ [re|配信期限：([0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2})|] :: [[L.ByteString]] of
+                                 in case s =~ [re|配信期限：([0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2})|] :: [[C.ByteString]] of
                                       [] -> Nothing
                                       [[datetime]] -> Just (datetimeFromString datetime)
 
-parsePage :: L.ByteString -> ThrowsError Gera
+parsePage :: C.ByteString -> ThrowsError Gera
 parsePage content =
   undefined
