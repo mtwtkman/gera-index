@@ -1,7 +1,7 @@
 module TwitterTest (tests) where
 
 import Data.Aeson
-import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Lazy.Char8 as C
 import Generator
 import System.IO.Unsafe
 import Test.Hspec
@@ -66,10 +66,10 @@ spec_TweetJsonParser =
   HS.testSpec "Tweet json parser" $ do
     describe "parses" $ do
       it "correctly" $ do
-        j <- L.readFile "test/twitter-api-data/tweet/with_gera_link.json"
+        j <- C.readFile "test/twitter-api-data/tweet/with_gera_link.json"
         (decode j :: Maybe Tweet) `shouldBe` Just (Tweet "1503325072974663680" ["LLR", "ダブバイ"] (Just "https://radio.gera.fan/jWy1"))
       it "reject by no gera link" $ do
-        j <- L.readFile "test/twitter-api-data/tweet/no_gera_link.json"
+        j <- C.readFile "test/twitter-api-data/tweet/no_gera_link.json"
         (decode j :: Maybe Tweet) `shouldBe` Just (Tweet "1503339295327031296" ["声溜めラジオ", "ラランド18禁ライブ"] Nothing)
 
 spec_TweetsJsonParser :: IO TestTree
@@ -82,7 +82,7 @@ spec_TweetsJsonParser =
   where
     doTest :: String -> IO ()
     doTest testDataPath = do
-      j <- L.readFile testDataPath
+      j <- C.readFile testDataPath
       (decode j :: Maybe Tweets)
         `shouldBe` Just
           ( Tweets
