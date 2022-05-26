@@ -52,7 +52,7 @@ extractEpisodeSection :: [Tag C.ByteString] -> [Tag C.ByteString]
 extractEpisodeSection = dropWhile (~/= ("<div class=episode-title>" :: String))
 
 findEpisode :: [Tag C.ByteString] -> ThrowsError Episode
-findEpisode tags = case dropWhile (~/= ("<div class=episode-title>" :: String)) tags of
+findEpisode tags = case extractEpisodeSection tags of
                     [] -> Left NotFoundEpisode
                     xs ->
                       let s  = innerText xs :: C.ByteString

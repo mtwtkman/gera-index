@@ -17,7 +17,8 @@ specs =
       unsafePerformIO
       [ spec_parsePage,
         spec_findAudioUrl,
-        spec_findEpisode
+        spec_findEpisode,
+        spec_findBroadCastDeadLine
       ]
 
 readTestDataPage :: FilePath -> IO C.ByteString
