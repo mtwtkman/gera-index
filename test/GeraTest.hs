@@ -2,8 +2,7 @@
 
 module GeraTest (tests) where
 
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as C
 import Gera
 import System.IO.Unsafe
 import Test.Hspec
@@ -23,10 +22,10 @@ specs =
         spec_findEpisode
       ]
 
-readTestDataPage :: FilePath -> IO L.ByteString
-readTestDataPage = L.readFile . (++) "test/gera-data/"
+readTestDataPage :: FilePath -> IO C.ByteString
+readTestDataPage = C.readFile . (++) "test/gera-data/"
 
-tagsFromTestData :: FilePath -> IO [Tag L.ByteString]
+tagsFromTestData :: FilePath -> IO [Tag C.ByteString]
 tagsFromTestData fname = do
   content <- readTestDataPage fname
   return $ parseTags content
