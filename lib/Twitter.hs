@@ -8,8 +8,8 @@ import Data.List
 import Data.Map (Map)
 import Data.Maybe
 import Data.Monoid ((<>))
-import qualified Data.Text as Tx
-import qualified Data.Text.Encoding as Tx
+import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.Encoding as T
 import qualified Data.Vector as V
 import GHC.Generics
 import Network.HTTP.Req
@@ -92,7 +92,7 @@ datetimeToFormattedString dt =
     mapPadZero fs = [printf "%02d" (f dt) | f <- fs]
 
 searchTweetsApiUrl :: Url 'Https
-searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: Tx.pack (show geraTwitterUserId) /: "tweets"
+searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: T.toStrict (T.pack (show geraTwitterUserId)) /: "tweets"
 
 data SearchCriteria = SearchCriteria
   { getMaxResulsts :: Integer,
@@ -110,17 +110,17 @@ validateSearchCriteria sc@(SearchCriteria maxResults _ _)
   | maxResults > 100 = Left (MalformedSearchCriteria MaxResultMustBeUnder100)
   | otherwise = Right sc
 
-textQueryParameterBuilder :: (QueryParam p, Monoid p) => Tx.Text -> Tx.Text -> p
-textQueryParameterBuilder k v = k =: v
+textQueryParameterBuilder :: (QueryParam p, Monoid p) => T.Text -> T.Text -> p
+textQueryParameterBuilder= (=:) . T.toStrict
 
-integerQueryParameter :: (QueryParam p, Monoid p) => Tx.Text -> Integer -> p
-integerQueryParameter name = (=:) name . show
+integerQueryParameter :: (QueryParam p, Monoid p) => T.Text -> Integer -> p
+integerQueryParameter name = (=:) (T.toStrict name) . show
 
 maxResultsQueryParameter :: (QueryParam p, Monoid p) => Integer -> p
 maxResultsQueryParameter = integerQueryParameter "max_results"
 
-datetimeQueryParameter :: (QueryParam p, Monoid p) => Tx.Text -> Datetime -> p
-datetimeQueryParameter name = (=:) name . datetimeToFormattedString
+datetimeQueryParameter :: (QueryParam p, Monoid p) => T.Text -> Datetime -> p
+datetimeQueryParameter name = (=:) (T.toStrict name) . datetimeToFormattedString
 
 startTimeQueryParamteter :: (QueryParam p, Monoid p) => Datetime -> p
 startTimeQueryParamteter = datetimeQueryParameter "start_time"
@@ -145,7 +145,7 @@ buildQueryParameter sc =
 
 data Tweet = Tweet
   { getId :: String,
-    getHashTags :: [Tx.Text],
+    getHashTags :: [T.Text],
     getGeraLink :: Maybe L.ByteString
   }
   deriving (Show, Eq, Generic)
@@ -159,9 +159,9 @@ instance FromJSON Tweet where
       hashtags <- withArray "Hashtags" (mapM (withObject "Tag" (.: "tag")) . V.toList) hashtagArray
       urls <- withObject "Urls" (.: "urls") entities
       expandedUrls <- withArray "ExpandedUrls" (mapM (withObject "ExpandedUrl" (.: "expanded_url")) . V.toList) urls
-      let geraUrl = case filter (Tx.isInfixOf geraHost) expandedUrls of
+      let geraUrl = case filter (T.isInfixOf geraHost) expandedUrls of
             [] -> mempty
-            x : _ -> return $ L.fromStrict (Tx.encodeUtf8 x)
+            x : _ -> return $ T.encodeUtf8 x
       return $ Tweet id' hashtags geraUrl
 
 instance ToJSON Tweet where

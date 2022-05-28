@@ -7,6 +7,8 @@ import Test.Hspec
 import Test.Tasty
 import Test.Tasty.Hspec as HS
 import Text.HTML.TagSoup
+import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.IO as T
 
 tests = [specs]
 
@@ -21,10 +23,10 @@ specs =
         spec_findBroadCastDeadLine
       ]
 
-readTestDataPage :: FilePath -> IO C.ByteString
-readTestDataPage = C.readFile . (++) "test/gera-data/"
+readTestDataPage :: FilePath -> IO T.Text
+readTestDataPage = T.readFile . (++) "test/gera-data/"
 
-tagsFromTestData :: FilePath -> IO [Tag C.ByteString]
+tagsFromTestData :: FilePath -> IO [Tag T.Text]
 tagsFromTestData fname = do
   content <- readTestDataPage fname
   return $ parseTags content
