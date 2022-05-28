@@ -56,7 +56,7 @@ spec_findBroadCastDeadLine =
         tags <- tagsFromTestData "nodeadline.html"
         findBroadCastDeadLine tags `shouldBe` Nothing
       it "because unexpected format" $ do
-        tags <- tagsFromTestData "unepxecteddeadline.html"
+        tags <- tagsFromTestData "unexpected_deadline.html"
         findBroadCastDeadLine tags `shouldBe` Nothing
 
 spec_parsePage :: IO TestTree

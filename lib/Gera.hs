@@ -63,8 +63,11 @@ findEpisode tags = case extractEpisodeSection tags of
                       Right (number, _) -> Right (Episode title number)
                       _ -> Left NotFoundEpisode
 
+extractBroadCastDeadLine :: [Tag T.Text] -> [Tag T.Text]
+extractBroadCastDeadLine = dropWhile (~/= ("<div class=episode-details>" :: String))
+
 findBroadCastDeadLine :: [Tag T.Text] -> Maybe Datetime
-findBroadCastDeadLine tags = case dropWhile (~/= ("<div class=episode-details>" :: String)) tags of
+findBroadCastDeadLine tags = case extractBroadCastDeadLine tags of
                                [] -> Nothing
                                x : _ ->
                                  let s = fromTagText x
@@ -75,3 +78,6 @@ findBroadCastDeadLine tags = case dropWhile (~/= ("<div class=episode-details>" 
 parsePage :: T.Text -> ThrowsError Gera
 parsePage content =
   undefined
+
+trim :: T.Text -> T.Text
+trim = T.unwords . T.words
