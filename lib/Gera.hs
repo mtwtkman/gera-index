@@ -57,7 +57,7 @@ findEpisode :: [Tag T.Text] -> ThrowsError Episode
 findEpisode tags = case extractEpisodeSection tags of
                     [] -> Left NotFoundEpisode
                     (TagOpen "div" _) : rem ->
-                      let s  = fromTagText (head rem) :: T.Text
+                      let s  = fromTagText (head rem)
                           [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[T.Text]]
                      in case T.decimal lbsNumber of
                       Right (number, _) -> Right (Episode title number)
@@ -69,8 +69,8 @@ extractBroadcastDeadLine = dropWhile (~/= ("<div class=episode-details>" :: Stri
 findBroadcastDeadLine :: [Tag T.Text] -> Maybe Datetime
 findBroadcastDeadLine tags = case extractBroadcastDeadLine tags of
                                [] -> Nothing
-                               x : _ ->
-                                 let s = fromTagText x
+                               (TagOpen "div" _) : rem ->
+                                 let s = fromTagText(head rem)
                                  in case s =~ [re|配信期限：([0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2})|] :: [[T.Text]] of
                                       [] -> Nothing
                                       [[datetime]] -> Just (datetimeFromString datetime)
