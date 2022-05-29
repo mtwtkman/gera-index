@@ -20,7 +20,7 @@ specs =
       [ spec_parsePage,
         spec_findAudioUrl,
         spec_findEpisode,
-        spec_findBroadCastDeadLine
+        spec_findBroadcastDeadLine
       ]
 
 readTestDataPage :: FilePath -> IO T.Text
@@ -35,7 +35,7 @@ spec_findAudioUrl :: IO TestTree
 spec_findAudioUrl =
   HS.testSpec "findAudioUrl" $ do
     it "can find url from the audio tag" $ do
-      tag <- tagsFromTestData "audiotag.html"
+      tag <- tagsFromTestData "audio.html"
       findAudioUrl tag `shouldBe` Right "https://firebasestorage.googleapis.com/v0/b/gera-prd.appspot.com/o/episode-audios%2Ff5Zq7fsnkbFSIbfvEAmw.mp3?alt=media"
 
 spec_findEpisode :: IO TestTree
@@ -45,19 +45,19 @@ spec_findEpisode =
       tags <- tagsFromTestData "episode.html"
       findEpisode tags `shouldBe` Right (Episode "ギュネイ" 35)
 
-spec_findBroadCastDeadLine :: IO TestTree
-spec_findBroadCastDeadLine =
-  HS.testSpec "findBroadCastDeadLine" $ do
+spec_findBroadcastDeadLine :: IO TestTree
+spec_findBroadcastDeadLine =
+  HS.testSpec "findBroadcastDeadLine" $ do
     it "can find dead line as datetime" $ do
       tags <- tagsFromTestData "page.html"
-      findBroadCastDeadLine tags `shouldBe` Just (Datetime 2022 9 14 12 0)
+      findBroadcastDeadLine tags `shouldBe` Just (Datetime 2022 9 14 12 0)
     describe "can finds blank deadline as nothing" $ do
       it "because no deadline" $ do
         tags <- tagsFromTestData "nodeadline.html"
-        findBroadCastDeadLine tags `shouldBe` Nothing
+        findBroadcastDeadLine tags `shouldBe` Nothing
       it "because unexpected format" $ do
         tags <- tagsFromTestData "unexpected_deadline.html"
-        findBroadCastDeadLine tags `shouldBe` Nothing
+        findBroadcastDeadLine tags `shouldBe` Nothing
 
 spec_parsePage :: IO TestTree
 spec_parsePage =

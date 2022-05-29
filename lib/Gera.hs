@@ -56,18 +56,18 @@ extractEpisodeSection = dropWhile (~/= ("<div class=episode-title>" :: String))
 findEpisode :: [Tag T.Text] -> ThrowsError Episode
 findEpisode tags = case extractEpisodeSection tags of
                     [] -> Left NotFoundEpisode
-                    xs ->
-                      let s  = innerText xs :: T.Text
+                    (TagOpen "div" _) : rem ->
+                      let s  = fromTagText (head rem) :: T.Text
                           [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[T.Text]]
                      in case T.decimal lbsNumber of
                       Right (number, _) -> Right (Episode title number)
                       _ -> Left NotFoundEpisode
 
-extractBroadCastDeadLine :: [Tag T.Text] -> [Tag T.Text]
-extractBroadCastDeadLine = dropWhile (~/= ("<div class=episode-details>" :: String))
+extractBroadcastDeadLine :: [Tag T.Text] -> [Tag T.Text]
+extractBroadcastDeadLine = dropWhile (~/= ("<div class=episode-details>" :: String))
 
-findBroadCastDeadLine :: [Tag T.Text] -> Maybe Datetime
-findBroadCastDeadLine tags = case extractBroadCastDeadLine tags of
+findBroadcastDeadLine :: [Tag T.Text] -> Maybe Datetime
+findBroadcastDeadLine tags = case extractBroadcastDeadLine tags of
                                [] -> Nothing
                                x : _ ->
                                  let s = fromTagText x
