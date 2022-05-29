@@ -17,8 +17,7 @@ specs =
   testGroup "Specs" $
     map
       unsafePerformIO
-      [ spec_parsePage,
-        spec_findAudioUrl,
+      [ spec_findAudioUrl,
         spec_findEpisode,
         spec_findBroadcastDeadLine
       ]
@@ -49,25 +48,12 @@ spec_findBroadcastDeadLine :: IO TestTree
 spec_findBroadcastDeadLine =
   HS.testSpec "findBroadcastDeadLine" $ do
     it "can find dead line as datetime" $ do
-      tags <- tagsFromTestData "page.html"
+      tags <- tagsFromTestData "deadline.html"
       findBroadcastDeadLine tags `shouldBe` Just (Datetime 2022 9 14 12 0)
-    describe "can finds blank deadline as nothing" $ do
+    describe "can find blank deadline as nothing" $ do
       it "because no deadline" $ do
         tags <- tagsFromTestData "nodeadline.html"
         findBroadcastDeadLine tags `shouldBe` Nothing
       it "because unexpected format" $ do
-        tags <- tagsFromTestData "unexpected_deadline.html"
+        tags <- tagsFromTestData "invalid_formatted_deadline.html"
         findBroadcastDeadLine tags `shouldBe` Nothing
-
-spec_parsePage :: IO TestTree
-spec_parsePage =
-  HS.testSpec "parsePage" $ do
-    xit "can find audio source url" $ do
-      tags <- readTestDataPage "page.html"
-      parsePage tags
-        `shouldBe` Right
-          ( Gera
-              (Episode "ギュネイ" 35)
-              "https://firebasestorage.googleapis.com/v0/b/gera-prd.appspot.com/o/episode-audios%2Ff5Zq7fsnkbFSIbfvEAmw.mp3?alt=media"
-              (Just (Datetime 2022 9 14 12 0))
-          )

@@ -14,6 +14,7 @@ data GeraError
   = FailedParse
   | NotFoundAudioFile
   | NotFoundEpisode
+  | NonDigit
   deriving (Show, Eq)
 
 type ThrowsError a = Either GeraError a
@@ -27,8 +28,11 @@ data Datetime = Datetime
   }
   deriving (Show, Eq)
 
-datetimeFromString :: (IsString s) => s -> Datetime
-datetimeFromString s = undefined
+parseInt :: T.Text -> ThrowsError Int
+parseInt t = case T.decimal t of
+               Left _ -> Left NonDigit
+               Right (i, _) -> Right i
+
 
 fetchPage :: Url 'Https -> IO LbsResponse
 fetchPage url = runReq defaultHttpConfig $ do
@@ -71,9 +75,12 @@ findBroadcastDeadLine tags = case extractBroadcastDeadLine tags of
                                [] -> Nothing
                                (TagOpen "div" _) : rem ->
                                  let s = fromTagText(head rem)
-                                 in case s =~ [re|配信期限：([0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2})|] :: [[T.Text]] of
+                                 in case s =~ [re|配信期限：([0-9]{4})/([0-9]{2})/([0-9]{2}) ([0-9]{2}):([0-9]{2})|] :: [[T.Text]] of
                                       [] -> Nothing
-                                      [[datetime]] -> Just (datetimeFromString datetime)
+                                      [_ : ss@[yearS,monthS,dayS,hourS,minuteS]] ->
+                                        case mapM parseInt ss of
+                                          Left _ -> Nothing
+                                          Right [year,month,day,hour,minute] -> Just (Datetime year month day hour minute)
 
 parsePage :: T.Text -> ThrowsError Gera
 parsePage content =
