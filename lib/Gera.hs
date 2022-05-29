@@ -85,6 +85,3 @@ findBroadcastDeadLine tags = case extractBroadcastDeadLine tags of
 parsePage :: T.Text -> ThrowsError Gera
 parsePage content =
   undefined
-
-trim :: T.Text -> T.Text
-trim = T.unwords . T.words
