@@ -111,7 +111,7 @@ validateSearchCriteria sc@(SearchCriteria maxResults _ _)
   | otherwise = Right sc
 
 textQueryParameterBuilder :: (QueryParam p, Monoid p) => T.Text -> T.Text -> p
-textQueryParameterBuilder= (=:) . T.toStrict
+textQueryParameterBuilder = (=:) . T.toStrict
 
 integerQueryParameter :: (QueryParam p, Monoid p) => T.Text -> Integer -> p
 integerQueryParameter name = (=:) (T.toStrict name) . show

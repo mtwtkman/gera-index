@@ -1,11 +1,12 @@
 {-# LANGUAGE QuasiQuotes #-}
+
 module Gera where
 
-import Data.String
 import qualified Data.ByteString.Lazy.Char8 as C
+import Data.String
 import qualified Data.Text.Lazy as T
-import qualified Data.Text.Lazy.Read as T
 import qualified Data.Text.Lazy.Encoding as T
+import qualified Data.Text.Lazy.Read as T
 import Network.HTTP.Req
 import Text.HTML.TagSoup
 import Text.RE.TDFA.Text.Lazy
@@ -30,17 +31,18 @@ data Datetime = Datetime
 
 parseInt :: T.Text -> ThrowsError Int
 parseInt t = case T.decimal t of
-               Left _ -> Left NonDigit
-               Right (i, _) -> Right i
-
+  Left _ -> Left NonDigit
+  Right (i, _) -> Right i
 
 fetchPage :: Url 'Https -> IO LbsResponse
 fetchPage url = runReq defaultHttpConfig $ do
   req GET url NoReqBody lbsResponse mempty
 
-data Episode = Episode { getTitle :: T.Text
-                       , getNumber :: Int
-                       } deriving (Show, Eq)
+data Episode = Episode
+  { getTitle :: T.Text,
+    getNumber :: Int
+  }
+  deriving (Show, Eq)
 
 data Gera = Gera
   { getEpisode :: Episode,
@@ -59,28 +61,28 @@ extractEpisodeSection = dropWhile (~/= ("<div class=episode-title>" :: String))
 
 findEpisode :: [Tag T.Text] -> ThrowsError Episode
 findEpisode tags = case extractEpisodeSection tags of
-                    [] -> Left NotFoundEpisode
-                    (TagOpen "div" _) : rem ->
-                      let s  = fromTagText (head rem)
-                          [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[T.Text]]
-                     in case T.decimal lbsNumber of
-                      Right (number, _) -> Right (Episode title number)
-                      _ -> Left NotFoundEpisode
+  [] -> Left NotFoundEpisode
+  (TagOpen "div" _) : rem ->
+    let s = fromTagText (head rem)
+        [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[T.Text]]
+     in case T.decimal lbsNumber of
+          Right (number, _) -> Right (Episode title number)
+          _ -> Left NotFoundEpisode
 
 extractBroadcastDeadLine :: [Tag T.Text] -> [Tag T.Text]
 extractBroadcastDeadLine = dropWhile (~/= ("<div class=episode-details>" :: String))
 
 findBroadcastDeadLine :: [Tag T.Text] -> Maybe Datetime
 findBroadcastDeadLine tags = case extractBroadcastDeadLine tags of
-                               [] -> Nothing
-                               (TagOpen "div" _) : rem ->
-                                 let s = fromTagText(head rem)
-                                 in case s =~ [re|配信期限：([0-9]{4})/([0-9]{2})/([0-9]{2}) ([0-9]{2}):([0-9]{2})|] :: [[T.Text]] of
-                                      [] -> Nothing
-                                      [_ : ss@[yearS,monthS,dayS,hourS,minuteS]] ->
-                                        case mapM parseInt ss of
-                                          Left _ -> Nothing
-                                          Right [year,month,day,hour,minute] -> Just (Datetime year month day hour minute)
+  [] -> Nothing
+  (TagOpen "div" _) : rem ->
+    let s = fromTagText (head rem)
+     in case s =~ [re|配信期限：([0-9]{4})/([0-9]{2})/([0-9]{2}) ([0-9]{2}):([0-9]{2})|] :: [[T.Text]] of
+          [] -> Nothing
+          [_ : ss@[yearS, monthS, dayS, hourS, minuteS]] ->
+            case mapM parseInt ss of
+              Left _ -> Nothing
+              Right [year, month, day, hour, minute] -> Just (Datetime year month day hour minute)
 
 parsePage :: T.Text -> ThrowsError Gera
 parsePage content =

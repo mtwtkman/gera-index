@@ -1,14 +1,14 @@
 module GeraTest (tests) where
 
 import qualified Data.ByteString.Lazy.Char8 as C
+import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.IO as T
 import Gera
 import System.IO.Unsafe
 import Test.Hspec
 import Test.Tasty
 import Test.Tasty.Hspec as HS
 import Text.HTML.TagSoup
-import qualified Data.Text.Lazy as T
-import qualified Data.Text.Lazy.IO as T
 
 tests = [specs]
 
