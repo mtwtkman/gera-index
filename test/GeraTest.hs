@@ -19,7 +19,8 @@ specs =
       unsafePerformIO
       [ spec_findAudioUrl,
         spec_findEpisode,
-        spec_findBroadcastDeadLine
+        spec_findBroadcastDeadLine,
+        spec_parsePage
       ]
 
 readTestDataPage :: FilePath -> IO T.Text
@@ -57,3 +58,21 @@ spec_findBroadcastDeadLine =
       it "because unexpected format" $ do
         tags <- tagsFromTestData "invalid_formatted_deadline.html"
         findBroadcastDeadLine tags `shouldBe` Nothing
+
+spec_parsePage :: IO TestTree
+spec_parsePage =
+  HS.testSpec "parsePage" $ do
+    it "can build a structure from a page" $ do
+      content <- readTestDataPage "page.html"
+      let parsed = parsePage content
+          episode = Episode "ギュネイ" 35
+          datetime = Datetime 2022 9 14 12 0
+      parsed `shouldBe` Right (Gera episode "https://firebasestorage.googleapis.com/v0/b/gera-prd.appspot.com/o/episode-audios%2Ff5Zq7fsnkbFSIbfvEAmw.mp3?alt=media" (Just datetime))
+    it "can build a struct from a page though no deadline" $ do
+      content <- readTestDataPage "page_no_deadline.html"
+      let parsed = parsePage content
+          episode = Episode "ギュネイ" 35
+      parsed `shouldBe` Right (Gera episode "https://firebasestorage.googleapis.com/v0/b/gera-prd.appspot.com/o/episode-audios%2Ff5Zq7fsnkbFSIbfvEAmw.mp3?alt=media" Nothing)
+    it "fails building by unexpected contents" $ do
+      content <- readTestDataPage "invalid_page.html"
+      parsePage content `shouldBe` Left FailedParse
