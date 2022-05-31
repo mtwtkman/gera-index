@@ -1,7 +1,6 @@
 module Twitter where
 
 import Control.Monad
-import Data.Aeson
 import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as L
 import Data.List
@@ -192,8 +191,8 @@ fetchTwitter c sc = runReq defaultHttpConfig $ do
     buildQueryParameter sc
       <> oAuth2Bearer (L.toStrict $ getBearerToken c)
 
-aggregate :: Client -> SearchCriteria -> FilePath -> IO ()
-aggregate c sc path = do
+aggregate :: Client -> SearchCriteria  -> IO Tweets
+aggregate c sc = do
   resp <- fetchTwitter c sc
   let tweets = responseBody resp
-  L.writeFile path (encode tweets)
+  return tweets
