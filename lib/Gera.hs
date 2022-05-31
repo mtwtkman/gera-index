@@ -85,7 +85,16 @@ findBroadcastDeadLine tags = case extractBroadcastDeadLine tags of
               Right [year, month, day, hour, minute] -> Just (Datetime year month day hour minute)
 
 parsePage :: T.Text -> ThrowsError Gera
-parsePage content =
-  Left FailedParse
+parsePage content = do
+  tags <- Right (parseTags content)
+  audioUrl <- convergence $ findAudioUrl tags
+  episode <- convergence $ findEpisode tags
+  broadcastDeadLine <- convergence $ case findBroadcastDeadLine tags of
+    Just x -> Right (Just x)
+    Nothing -> Right Nothing
+
+  return $ Gera episode audioUrl broadcastDeadLine
   where
-    tags = parseTags content
+    convergence :: ThrowsError a -> ThrowsError a
+    convergence (Left _) = Left FailedParse
+    convergence x = x

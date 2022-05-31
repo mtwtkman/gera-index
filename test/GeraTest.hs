@@ -75,4 +75,4 @@ spec_parsePage =
       parsed `shouldBe` Right (Gera episode "https://firebasestorage.googleapis.com/v0/b/gera-prd.appspot.com/o/episode-audios%2Ff5Zq7fsnkbFSIbfvEAmw.mp3?alt=media" Nothing)
     it "fails building by unexpected contents" $ do
       content <- readTestDataPage "invalid_page.html"
-      parsePage content `shouldBe` Left FailedParse
+      parsePage content `shouldBe` Left NotFoundEpisode
