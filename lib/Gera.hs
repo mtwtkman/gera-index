@@ -12,8 +12,7 @@ import Text.HTML.TagSoup
 import Text.RE.TDFA.Text.Lazy
 
 data GeraError
-  = FailedParse
-  | NotFoundAudioFile
+  = NotFoundAudioFile
   | NotFoundEpisode
   | NonDigit
   deriving (Show, Eq)
@@ -64,10 +63,14 @@ findEpisode tags = case extractEpisodeSection tags of
   [] -> Left NotFoundEpisode
   (TagOpen "div" _) : rem ->
     let s = fromTagText (head rem)
-        [[_, lbsNumber, title]] = s =~ [re|#([0-9]+) (.+)|] :: [[T.Text]]
-     in case T.decimal lbsNumber of
-          Right (number, _) -> Right (Episode title number)
-          _ -> Left NotFoundEpisode
+        matched = s =~ [re|#([0-9]+) (.+)|] :: [[T.Text]]
+     in case matched of
+          [[_, lbsNumber, title]] ->
+            case T.decimal lbsNumber of
+                Right (number, _) -> Right (Episode title number)
+                _ -> Left NotFoundEpisode
+          _ ->
+            Left NotFoundEpisode
 
 extractBroadcastDeadLine :: [Tag T.Text] -> [Tag T.Text]
 extractBroadcastDeadLine = dropWhile (~/= ("<div class=episode-details>" :: String))
@@ -87,14 +90,10 @@ findBroadcastDeadLine tags = case extractBroadcastDeadLine tags of
 parsePage :: T.Text -> ThrowsError Gera
 parsePage content = do
   tags <- Right (parseTags content)
-  audioUrl <- convergence $ findAudioUrl tags
-  episode <- convergence $ findEpisode tags
-  broadcastDeadLine <- convergence $ case findBroadcastDeadLine tags of
+  audioUrl <- findAudioUrl tags
+  episode <- findEpisode tags
+  broadcastDeadLine <- case findBroadcastDeadLine tags of
     Just x -> Right (Just x)
     Nothing -> Right Nothing
 
   return $ Gera episode audioUrl broadcastDeadLine
-  where
-    convergence :: ThrowsError a -> ThrowsError a
-    convergence (Left _) = Left FailedParse
-    convergence x = x
