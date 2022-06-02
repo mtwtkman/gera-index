@@ -142,9 +142,13 @@ buildQueryParameter sc =
     <> textQueryParameterBuilder "tweet.fields" "entities"
     <> textQueryParameterBuilder "exclude" "retweets,replies"
 
+type HashTags = [T.Text]
+
+type TweetId = String
+
 data Tweet = Tweet
-  { getId :: String,
-    getHashTags :: [T.Text],
+  { getId :: TweetId,
+    getHashTags :: HashTags,
     getGeraLink :: Maybe L.ByteString
   }
   deriving (Show, Eq, Generic)
@@ -191,7 +195,7 @@ fetchTwitter c sc = runReq defaultHttpConfig $ do
     buildQueryParameter sc
       <> oAuth2Bearer (L.toStrict $ getBearerToken c)
 
-aggregate :: Client -> SearchCriteria  -> IO Tweets
+aggregate :: Client -> SearchCriteria -> IO Tweets
 aggregate c sc = do
   resp <- fetchTwitter c sc
   let tweets = responseBody resp

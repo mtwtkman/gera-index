@@ -67,8 +67,8 @@ findEpisode tags = case extractEpisodeSection tags of
      in case matched of
           [[_, lbsNumber, title]] ->
             case T.decimal lbsNumber of
-                Right (number, _) -> Right (Episode title number)
-                _ -> Left NotFoundEpisode
+              Right (number, _) -> Right (Episode title number)
+              _ -> Left NotFoundEpisode
           _ ->
             Left NotFoundEpisode
 
