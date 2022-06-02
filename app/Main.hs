@@ -13,10 +13,9 @@ data Item = Item
   }
   deriving (Show, Eq)
 
-aggregateTweets :: Tw.Datetime -> IO Tw.Tweets
-aggregateTweets dt = do
+aggregateTweets :: Tw.SearchCriteria -> IO Tw.Tweets
+aggregateTweets sc = do
   client <- Tw.fromDotEnv
-  let sc = Tw.SearchCriteria 5 (Just dt) Nothing
   Tw.aggregate client sc
 
 saveTweets :: FilePath -> Tw.Tweets -> IO ()
@@ -31,5 +30,6 @@ buildItem tweet = Item (Tw.getId tweet) (Tw.getHashTags tweet)
 
 main :: IO ()
 main = do
-  tweets <- aggregateTweets (Tw.Datetime 2022 4 1 0 0 0)
+  let sc = Tw.SearchCriteria 5 (Just (Tw.Datetime 2022 4 1 0 0 0)) Nothing
+  tweets <- aggregateTweets sc
   saveTweets tweetsResultFilePath tweets
