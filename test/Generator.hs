@@ -41,23 +41,11 @@ data Month = Month1 OneDigit | Month2 TwoDigits deriving (Generic, Show)
 
 data Day = Day1 OneDigit | Day2 TwoDigits deriving (Generic, Show)
 
-data Hour = Hour0 Zero | Hour1 OneDigit | Hour2 TwoDigits deriving (Generic, Show)
-
-data Minute = Minute0 Zero | Minute1 OneDigit | Minute2 TwoDigits deriving (Generic, Show)
-
-data Second = Second0 Zero | Second1 OneDigit | Second2 TwoDigits deriving (Generic, Show)
-
 instance Monad m => Serial m Year
 
 instance Monad m => Serial m Month
 
 instance Monad m => Serial m Day
-
-instance Monad m => Serial m Hour
-
-instance Monad m => Serial m Minute
-
-instance Monad m => Serial m Second
 
 yearToInteger :: Year -> Integer
 yearToInteger (Year d) = fourDigitsToInteger d
@@ -69,18 +57,3 @@ monthToInteger (Month2 d) = twoDigitsToInteger d
 dayToInteger :: Day -> Integer
 dayToInteger (Day1 d) = oneDigitToInteger d
 dayToInteger (Day2 d) = twoDigitsToInteger d
-
-hourToInteger :: Hour -> Integer
-hourToInteger (Hour0 d) = zeroToInteger d
-hourToInteger (Hour1 d) = oneDigitToInteger d
-hourToInteger (Hour2 d) = twoDigitsToInteger d
-
-minuteToInteger :: Minute -> Integer
-minuteToInteger (Minute0 d) = zeroToInteger d
-minuteToInteger (Minute1 d) = oneDigitToInteger d
-minuteToInteger (Minute2 d) = twoDigitsToInteger d
-
-secondToInteger :: Second -> Integer
-secondToInteger (Second0 d) = zeroToInteger d
-secondToInteger (Second1 d) = oneDigitToInteger d
-secondToInteger (Second2 d) = twoDigitsToInteger d

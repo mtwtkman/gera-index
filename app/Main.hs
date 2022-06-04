@@ -2,8 +2,10 @@ module Main where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Semigroup ((<>))
 import qualified Data.Text as T
 import qualified Gera as G
+import Options.Applicative
 import qualified Twitter as Tw
 
 data Item = Item
@@ -28,8 +30,45 @@ tweetsResultFilePath = "result/tweets.json"
 buildItem :: Tw.Tweet -> [G.Gera] -> Item
 buildItem tweet = Item (Tw.getId tweet) (Tw.getHashTags tweet)
 
+data Sample = Sample
+  { hello :: String,
+    quite :: Bool,
+    enthusiasm :: Int
+  }
+
+sample :: Parser Sample
+sample =
+  Sample
+    <$> strOption
+      ( long "hello"
+          <> metavar "TARGET"
+          <> help "Target for the greeting"
+      )
+    <*> switch
+      ( long "quiet"
+          <> short 'q'
+          <> help "Whether to be quiet"
+      )
+    <*> option
+      auto
+      ( long "enthusiasm"
+          <> help "Howenthusiastically to greet"
+          <> showDefault
+          <> value 1
+          <> metavar "INT"
+      )
+
 main :: IO ()
-main = do
-  let sc = Tw.SearchCriteria 5 (Just (Tw.Datetime 2022 4 1 0 0 0)) Nothing
-  tweets <- aggregateTweets sc
-  saveTweets tweetsResultFilePath tweets
+main = greet =<< execParser opts
+  where
+    opts =
+      info
+        (sample <**> helper)
+        ( fullDesc
+            <> progDesc "Print a greeting for TARGET"
+            <> header "hello - a test for optparse-applicative"
+        )
+
+greet :: Sample -> IO ()
+greet (Sample h False n) = putStrLn $ "Helo, " ++ h ++ replicate n '!'
+greet _ = return ()

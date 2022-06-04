@@ -16,6 +16,7 @@ executable gera-index
                       , utf8-string
                       , req
                       , aeson
+                      , optparse-applicative
 
 library
   hs-source-dirs: lib

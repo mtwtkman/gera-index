@@ -73,19 +73,14 @@ fromDotEnv = do
 data Datetime = Datetime
   { getYear :: Integer,
     getMonth :: Integer,
-    getDay :: Integer,
-    getHour :: Integer,
-    getMinute :: Integer,
-    getSecond :: Integer
+    getDay :: Integer
   }
   deriving (Show, Eq, Ord)
 
 datetimeToFormattedString :: Datetime -> String
 datetimeToFormattedString dt =
   intercalate "-" (mapPadZero [getYear, getMonth, getDay])
-    ++ "T"
-    ++ intercalate ":" (mapPadZero [getHour, getMinute, getSecond])
-    ++ "Z"
+    ++ "T00:00:00Z"
   where
     mapPadZero :: [Datetime -> Integer] -> [String]
     mapPadZero fs = [printf "%02d" (f dt) | f <- fs]

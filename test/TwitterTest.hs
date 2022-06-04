@@ -22,15 +22,12 @@ prop_datetimeToFormattedString =
   testGroup
     "dateToFormattedString"
     [ SC.testProperty "transform itself by specified format" $
-        \y m d h mi s ->
+        \y m d ->
           let yv = yearToInteger (y :: Year)
               mv = monthToInteger (m :: Month)
               dv = dayToInteger (d :: Day)
-              hv = hourToInteger (h :: Hour)
-              miv = minuteToInteger (mi :: Minute)
-              sv = secondToInteger (s :: Second)
-              date = Datetime yv mv dv hv miv sv
-           in datetimeToFormattedString date == printf "%04d-%02d-%02dT%02d:%02d:%02dZ" yv mv dv hv miv sv
+              date = Datetime yv mv dv
+           in datetimeToFormattedString date == printf "%04d-%02d-%02dT00:00:00Z" yv mv dv
     ]
 
 specs :: TestTree

@@ -14,7 +14,7 @@ pkgs.mkShell {
     alias fmt='ormolu -i $(fd --glob *.hs)'
     alias t="cabal run test --"
     alias b="cabal build"
-    alias run="cabal run gera-index"
+    alias run="cabal run gera-index --"
     alias repl="cabal repl"
     export PS1="\e[34;1m[dev]\W$ \e[0m"
   '';
