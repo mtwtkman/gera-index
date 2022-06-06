@@ -1,5 +1,7 @@
+{-# LANGUAGE QuasiQuotes #-}
 module Twitter where
 
+import Data.String
 import Control.Monad
 import Data.Aeson.Types
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -14,13 +16,19 @@ import GHC.Generics
 import Network.HTTP.Req
 import System.Environment
 import Text.Printf
+import Text.RE.TDFA.ByteString.Lazy
 
 data InvalidSearchCriteria
   = StartTimeMustBeLessThanEndTime
   | MaxResultMustBeUnder100
   | MaxResultMustBeOver5
+  deriving(Show, Eq)
 
-newtype TwitterError = MalformedSearchCriteria InvalidSearchCriteria
+data InvalidDatetimeFormat = InvalidDatetimeFormat deriving(Show, Eq)
+
+data TwitterError = MalformedSearchCriteria InvalidSearchCriteria
+                  | MalformedDatetimeString InvalidDatetimeFormat
+                  deriving(Show, Eq)
 
 type ThrowsError a = Either TwitterError a
 
@@ -84,6 +92,24 @@ datetimeToFormattedString dt =
   where
     mapPadZero :: [Datetime -> Integer] -> [String]
     mapPadZero fs = [printf "%02d" (f dt) | f <- fs]
+
+stringToDatetime :: L.ByteString -> ThrowsError Datetime
+stringToDatetime s =
+  let matched = s =~ [re|([0-9]{4})([0-9]{2})([0-9]{2})|]
+  in case matched of
+       [[_, ys, ms, ds]] -> do
+         y <- toInt ys
+         m <- toInt ms
+         d <- toInt ds
+         Right(Datetime y m d)
+       _ ->
+         Left (MalformedDatetimeString InvalidDatetimeFormat)
+  where
+    toInt :: L.ByteString -> ThrowsError Integer
+    toInt s = case L.readInteger s of
+                Just(v, _) ->  Right v
+                _ -> Left (MalformedDatetimeString InvalidDatetimeFormat)
+
 
 searchTweetsApiUrl :: Url 'Https
 searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: T.toStrict (T.pack (show geraTwitterUserId)) /: "tweets"

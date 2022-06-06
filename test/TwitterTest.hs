@@ -38,7 +38,8 @@ specs =
       [ spec_sep,
         spec_splitLine,
         spec_TweetJsonParser,
-        spec_TweetsJsonParser
+        spec_TweetsJsonParser,
+        spec_stringToDatetime
       ]
 
 spec_sep :: IO TestTree
@@ -89,3 +90,17 @@ spec_TweetsJsonParser =
                 Tweet "1503325063751348228" ["ゆったり感", "ヘル中"] (Just "https://radio.gera.fan/iYmE")
               ]
           )
+
+spec_stringToDatetime :: IO TestTree
+spec_stringToDatetime =
+  HS.testSpec "stringToDatetime" $ do
+    it "can parse from valid string" $ do
+      let y = 2022
+          m = 6
+          d = 1
+          s = C.concat $ map (C.pack . printf "%02d")  [y, m, d]
+       in stringToDatetime s `shouldBe` Right (Datetime y m d)
+    it "cannot parse from invalid string" $ do
+      let s = "xxx"
+       in stringToDatetime s `shouldBe` Left (MalformedDatetimeString InvalidDatetimeFormat)
+
