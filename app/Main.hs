@@ -7,6 +7,7 @@ import qualified Data.Text as T
 import qualified Gera as G
 import Options.Applicative
 import qualified Twitter as Tw
+import Data.Maybe
 
 data Item = Item
   { getId :: Tw.TweetId,
@@ -30,45 +31,39 @@ tweetsResultFilePath = "result/tweets.json"
 buildItem :: Tw.Tweet -> [G.Gera] -> Item
 buildItem tweet = Item (Tw.getId tweet) (Tw.getHashTags tweet)
 
-data Sample = Sample
-  { hello :: String,
-    quite :: Bool,
-    enthusiasm :: Int
-  }
-
-sample :: Parser Sample
-sample =
-  Sample
+data Option = Option { start :: String
+                     , end :: Maybe String
+                     , maxResult :: Maybe Integer
+                     }
+optionParser :: Parser Option
+optionParser =
+  Option
     <$> strOption
-      ( long "hello"
-          <> metavar "TARGET"
-          <> help "Target for the greeting"
+      ( long "start"
+          <> short 's'
+          <> metavar "YYYYMMDD"
+          <> help "startpoint datetime"
       )
-    <*> switch
-      ( long "quiet"
-          <> short 'q'
-          <> help "Whether to be quiet"
-      )
-    <*> option
-      auto
-      ( long "enthusiasm"
-          <> help "Howenthusiastically to greet"
+    <*> option auto
+      ( long "end"
+          <> short 'e'
+          <> metavar "YYYYMMDD"
+          <> help "endpoint datetime"
           <> showDefault
-          <> value 1
+          <> value Nothing
+      )
+    <*> option auto
+      ( long "max-result"
+          <> short 'r'
+          <> help "max number of tweets"
           <> metavar "INT"
+          <> showDefault
+          <> value (Just 100)
       )
 
 main :: IO ()
-main = greet =<< execParser opts
-  where
-    opts =
-      info
-        (sample <**> helper)
-        ( fullDesc
-            <> progDesc "Print a greeting for TARGET"
-            <> header "hello - a test for optparse-applicative"
-        )
-
-greet :: Sample -> IO ()
-greet (Sample h False n) = putStrLn $ "Helo, " ++ h ++ replicate n '!'
-greet _ = return ()
+main = do
+  o <- execParser opts
+  print $ "s=" ++ start o ++ " e=" ++ fromMaybe "" (end o) ++ " r=" ++  show (fromMaybe 0 (maxResult o))
+    where
+      opts = info (optionParser <**> helper) fullDesc
