@@ -1,7 +1,7 @@
 module Main where
 
 import Data.Aeson
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Semigroup ((<>))
 import qualified Data.Text as T
 import qualified Gera as G
@@ -23,7 +23,7 @@ aggregateTweets sc = do
 
 saveTweets :: FilePath -> Tw.Tweets -> IO ()
 saveTweets path tweets =
-  L.writeFile path (encode tweets)
+  C.writeFile path (encode tweets)
 
 tweetsResultFilePath :: FilePath
 tweetsResultFilePath = "result/tweets.json"
@@ -31,9 +31,9 @@ tweetsResultFilePath = "result/tweets.json"
 buildItem :: Tw.Tweet -> [G.Gera] -> Item
 buildItem tweet = Item (Tw.getId tweet) (Tw.getHashTags tweet)
 
-data Option = Option { start :: String
-                     , end :: Maybe String
-                     , maxResult :: Maybe Integer
+data Option = Option { start :: C.ByteString
+                     , end :: Maybe C.ByteString
+                     , maxResult :: Integer
                      }
 optionParser :: Parser Option
 optionParser =
@@ -58,12 +58,29 @@ optionParser =
           <> help "max number of tweets"
           <> metavar "INT"
           <> showDefault
-          <> value (Just 100)
+          <> value 100
       )
 
 main :: IO ()
 main = do
-  o <- execParser opts
-  print $ "s=" ++ start o ++ " e=" ++ fromMaybe "" (end o) ++ " r=" ++  show (fromMaybe 0 (maxResult o))
-    where
-      opts = info (optionParser <**> helper) fullDesc
+  opt <-  execParser (info optionParser fullDesc)
+  let sc = buildTwitterSearchCriteria opt
+  print sc
+
+data AppError = TwitterError Tw.TwitterError
+              | GeraError G.GeraError
+              deriving(Show)
+
+type ThrowsError = Either AppError
+
+buildTwitterSearchCriteria :: Option -> ThrowsError Tw.SearchCriteria
+buildTwitterSearchCriteria o = do
+  startDatetime <- case Tw.stringToDatetime $ start o of
+            Right v -> Right v
+            Left e -> Left (TwitterError e)
+  endDatetime <- case end o of
+                   Nothing -> Right Nothing
+                   Just v -> case Tw.stringToDatetime v of
+                               Right v' -> Right (Just v')
+                               Left e -> Left (TwitterError e)
+  Right (Tw.SearchCriteria (maxResult o) (Just startDatetime) endDatetime)

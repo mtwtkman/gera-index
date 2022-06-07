@@ -115,7 +115,7 @@ searchTweetsApiUrl :: Url 'Https
 searchTweetsApiUrl = https "api.twitter.com" /: "2" /: "users" /: T.toStrict (T.pack (show geraTwitterUserId)) /: "tweets"
 
 data SearchCriteria = SearchCriteria
-  { getMaxResulsts :: Integer,
+  { getMaxResults :: Integer,
     getStartTime :: Maybe Datetime,
     getEndTime :: Maybe Datetime
   }
