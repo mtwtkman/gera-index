@@ -34,6 +34,7 @@ buildItem tweet = Item (Tw.getId tweet) (Tw.getHashTags tweet)
 data Option = Option { start :: C.ByteString
                      , end :: Maybe C.ByteString
                      , maxResult :: Integer
+                     , resultDir :: FilePath
                      }
 optionParser :: Parser Option
 optionParser =
@@ -54,11 +55,19 @@ optionParser =
       )
     <*> option auto
       ( long "max-result"
-          <> short 'r'
+          <> short 'm'
           <> help "max number of tweets"
           <> metavar "INT"
           <> showDefault
           <> value 100
+      )
+    <*> strOption
+      ( long "result-dir"
+          <> short 'd'
+          <> metavar "DIRNAME"
+          <> showDefault
+          <> help "the file of fetched tweets"
+          <> value "results"
       )
 
 main :: IO ()
@@ -84,3 +93,4 @@ buildTwitterSearchCriteria o = do
                                Right v' -> Right (Just v')
                                Left e -> Left (TwitterError e)
   Right (Tw.SearchCriteria (maxResult o) (Just startDatetime) endDatetime)
+
