@@ -8,6 +8,7 @@ import qualified Gera as G
 import Options.Applicative
 import qualified Twitter as Tw
 import Data.Maybe
+import System.Directory as D
 
 data Item = Item
   { getId :: Tw.TweetId,
@@ -67,13 +68,14 @@ optionParser =
           <> metavar "DIRNAME"
           <> showDefault
           <> help "the file of fetched tweets"
-          <> value "results"
+          <> value "result"
       )
 
 main :: IO ()
 main = do
   opt <-  execParser (info optionParser fullDesc)
   let sc = buildTwitterSearchCriteria opt
+  D.createDirectoryIfMissing True $ resultDir opt
   print sc
 
 data AppError = TwitterError Tw.TwitterError
@@ -93,4 +95,3 @@ buildTwitterSearchCriteria o = do
                                Right v' -> Right (Just v')
                                Left e -> Left (TwitterError e)
   Right (Tw.SearchCriteria (maxResult o) (Just startDatetime) endDatetime)
-

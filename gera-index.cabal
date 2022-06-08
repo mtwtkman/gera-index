@@ -17,6 +17,7 @@ executable gera-index
                       , req
                       , aeson
                       , optparse-applicative
+                      , directory
 
 library
   hs-source-dirs: lib
