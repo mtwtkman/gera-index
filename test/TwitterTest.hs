@@ -98,9 +98,8 @@ spec_stringToDatetime =
       let y = 2022
           m = 6
           d = 1
-          s = C.concat $ map (C.pack . printf "%02d")  [y, m, d]
+          s = C.concat $ map (C.pack . printf "%02d") [y, m, d]
        in stringToDatetime s `shouldBe` Right (Datetime y m d)
     it "cannot parse from invalid string" $ do
       let s = "xxx"
        in stringToDatetime s `shouldBe` Left (MalformedDatetimeString InvalidDatetimeFormat)
-
