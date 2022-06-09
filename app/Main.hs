@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Data.Aeson
@@ -33,7 +34,7 @@ buildItem :: Tw.Tweet -> [G.Gera] -> Item
 buildItem tweet = Item (Tw.getId tweet) (Tw.getHashTags tweet)
 
 data Option = Option { start :: C.ByteString
-                     , end :: Maybe C.ByteString
+                     , end :: C.ByteString
                      , maxResult :: Integer
                      , resultDir :: FilePath
                      }
@@ -46,13 +47,12 @@ optionParser =
           <> metavar "YYYYMMDD"
           <> help "startpoint datetime"
       )
-    <*> option auto
+    <*> strOption
       ( long "end"
           <> short 'e'
           <> metavar "YYYYMMDD"
           <> help "endpoint datetime"
-          <> showDefault
-          <> value Nothing
+          <> value C.empty
       )
     <*> option auto
       ( long "max-result"
@@ -80,18 +80,27 @@ main = do
 
 data AppError = TwitterError Tw.TwitterError
               | GeraError G.GeraError
+              | InvalidOption
               deriving(Show)
 
 type ThrowsError = Either AppError
 
-buildTwitterSearchCriteria :: Option -> ThrowsError Tw.SearchCriteria
 buildTwitterSearchCriteria o = do
-  startDatetime <- case Tw.stringToDatetime $ start o of
+  validOption <- validateOption o
+  startDatetime <- case Tw.stringToDatetime $ start validOption of
             Right v -> Right v
             Left e -> Left (TwitterError e)
-  endDatetime <- case end o of
-                   Nothing -> Right Nothing
-                   Just v -> case Tw.stringToDatetime v of
-                               Right v' -> Right (Just v')
-                               Left e -> Left (TwitterError e)
-  Right (Tw.SearchCriteria (maxResult o) (Just startDatetime) endDatetime)
+  endDatetime <- let endV = end validOption
+                  in if C.null endV then
+                                Right Nothing
+                                else
+                                  case Tw.stringToDatetime endV of
+                                        Right v -> Right (Just v)
+                                        Left e -> Left (TwitterError e)
+  Right (Tw.SearchCriteria (maxResult validOption) (Just startDatetime) endDatetime)
+
+validateOption :: Option -> ThrowsError Option
+validateOption o@(Option s e _ _)
+  | C.null e = Right o
+  | s > e = Left InvalidOption
+  | otherwise = Right o
