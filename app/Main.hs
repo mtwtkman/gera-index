@@ -78,9 +78,13 @@ optionParser =
 main :: IO ()
 main = do
   opt <- execParser (info optionParser fullDesc)
-  let sc = buildTwitterSearchCriteria opt
   D.createDirectoryIfMissing True $ resultDir opt
-  print sc
+  let sc = buildTwitterSearchCriteria opt
+  case sc of
+    Right v -> do
+      tweets <- aggregateTweets v
+      print tweets
+    Left _ -> return ()
 
 data AppError
   = TwitterError Tw.TwitterError
